@@ -17,7 +17,7 @@ function createWindow() {
     height: 800,
     titleBarStyle: 'hiddenInset', // Hide default title bar but keep traffic lights
     trafficLightPosition: { x: 20, y: 14 }, // Position the ●●● buttons
-    vibrancy: 'under-window', // Add vibrancy effect
+    vibrancy: 'hud', // Add vibrancy effect
     visualEffectState: 'active', // Ensure vibrancy is applied even when window is active
     backgroundColor: '#00000000', // Transparent background so frosted areas show vibrancy
     roundedCorners: true, // Add rounded corners to the main window

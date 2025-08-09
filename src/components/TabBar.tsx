@@ -21,7 +21,9 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
           <div
             key={tab.id}
             className={`group flex h-full w-[180px] max-w-xs cursor-pointer items-center rounded-[5px] rounded-b-none px-2 ${
-              tab.isActive ? 'bg-white/70' : 'bg-white/0 hover:bg-white/40'
+              tab.isActive
+                ? 'bg-gradient-to-b from-white/80 to-white/70'
+                : 'bg-white/0 hover:bg-white/40'
             } `}
             style={{ WebkitAppRegion: 'no-drag' } as any}
             onClick={() => onTabClick(tab.id)}
