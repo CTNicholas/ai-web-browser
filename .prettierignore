@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+coverage
+.next
+.turbo
+*.log
+*.lock
+**/*.min.*
+public/*.png
+

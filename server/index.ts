@@ -24,8 +24,8 @@ const users = [
   {
     id: 1,
     email: 'demo@example.com',
-    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi' // "password"
-  }
+    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // "password"
+  },
 ];
 
 interface User {
@@ -65,13 +65,13 @@ app.post('/liveblocks-auth', async (req, res) => {
       info: {
         name: 'Anonymous User',
         avatar: `https://liveblocks.io/avatars/avatar-${Math.floor(Math.random() * 30)}.png`,
-        color: '#' + Math.floor(Math.random()*16777215).toString(16)
-      }
+        color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+      },
     };
 
     // Create a session for the user
     const session = liveblocks.prepareSession(user.id, {
-      userInfo: user.info
+      userInfo: user.info,
     });
 
     // Give the user access to any room (in production, implement proper permissions)
@@ -79,7 +79,7 @@ app.post('/liveblocks-auth', async (req, res) => {
 
     // Authorize and return the response
     const { status, body } = await session.authorize();
-    
+
     return res.status(status).end(body);
   } catch (error) {
     console.error('Liveblocks auth error:', error);

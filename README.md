@@ -28,11 +28,13 @@ A React Electron application featuring a tabbed web browser interface with authe
 ### Installation
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Start development environment:
+
    ```bash
    npm run dev
    ```
@@ -57,12 +59,14 @@ A React Electron application featuring a tabbed web browser interface with authe
 The application includes **Liveblocks v3.2.1** for real-time collaborative features:
 
 ### Features
+
 - ✅ **LiveblocksProvider** with authentication endpoint
-- ✅ **RoomProvider** for collaborative sessions  
+- ✅ **RoomProvider** for collaborative sessions
 - ✅ **Liveblocks React UI** components and default styles
 - 🔗 Authentication endpoint at `http://localhost:3001/liveblocks-auth`
 
 ### Authentication API
+
 ```bash
 curl -X POST http://localhost:3001/liveblocks-auth \
   -H "Content-Type: application/json"
@@ -71,7 +75,9 @@ curl -X POST http://localhost:3001/liveblocks-auth \
 The endpoint automatically generates anonymous users with random avatars and provides full room access. In production, implement proper user authentication and granular permissions.
 
 ### Environment Setup
+
 Add your Liveblocks secret key to `.env`:
+
 ```
 LIVEBLOCKS_SECRET_KEY=sk_dev_your-actual-liveblocks-secret-key
 ```
@@ -86,6 +92,7 @@ LIVEBLOCKS_SECRET_KEY=sk_dev_your-actual-liveblocks-secret-key
 ## Development
 
 The application uses:
+
 - **HMR**: React components update in real-time during development
 - **TypeScript**: Strong typing throughout the application
 - **ESLint**: Code quality and consistency
@@ -94,6 +101,7 @@ The application uses:
 ## Configuration
 
 Environment variables (`.env`):
+
 ```
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 PORT=3001
@@ -115,5 +123,6 @@ PORT=3001
 ## Demo Credentials
 
 Default user for testing:
+
 - Email: `demo@example.com`
 - Password: `password`

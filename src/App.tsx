@@ -9,10 +9,12 @@ function App() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
-  const [tabNavInfo, setTabNavInfo] = useState<{[key: string]: {canGoBack: boolean, canGoForward: boolean}}>({});
+  const [tabNavInfo, setTabNavInfo] = useState<{
+    [key: string]: { canGoBack: boolean; canGoForward: boolean };
+  }>({});
   const browserAPI = useBrowserAPI();
 
-  const activeTab = tabs.find(tab => tab.id === activeTabId) || null;
+  const activeTab = tabs.find((tab) => tab.id === activeTabId) || null;
 
   const createNewTab = async (url: string = 'https://www.google.com') => {
     if (!browserAPI) return;
@@ -24,10 +26,10 @@ function App() {
         title: 'Loading...',
         url: result.url,
         isActive: true,
-        isLoading: true
+        isLoading: true,
       };
 
-      setTabs(prev => prev.map(t => ({ ...t, isActive: false })).concat(newTab));
+      setTabs((prev) => prev.map((t) => ({ ...t, isActive: false })).concat(newTab));
       setActiveTabId(result.id);
       await browserAPI.switchTab(result.id);
 
@@ -43,7 +45,7 @@ function App() {
 
     try {
       await browserAPI.switchTab(tabId);
-      setTabs(prev => prev.map(tab => ({ ...tab, isActive: tab.id === tabId })));
+      setTabs((prev) => prev.map((tab) => ({ ...tab, isActive: tab.id === tabId })));
       setActiveTabId(tabId);
       await updateTabInfo(tabId);
     } catch (error) {
@@ -57,10 +59,10 @@ function App() {
 
     try {
       await browserAPI.closeTab(tabId);
-      
-      setTabs(prev => {
-        const newTabs = prev.filter(tab => tab.id !== tabId);
-        
+
+      setTabs((prev) => {
+        const newTabs = prev.filter((tab) => tab.id !== tabId);
+
         // If closing active tab, switch to another tab
         if (activeTabId === tabId && newTabs.length > 0) {
           const nextTab = newTabs[newTabs.length - 1];
@@ -70,7 +72,7 @@ function App() {
         } else if (activeTabId === tabId) {
           setActiveTabId(null);
         }
-        
+
         return newTabs;
       });
     } catch (error) {
@@ -83,11 +85,11 @@ function App() {
 
     try {
       await browserAPI.navigateTab(activeTabId, url);
-      setTabs(prev => prev.map(tab => 
-        tab.id === activeTabId 
-          ? { ...tab, url, isLoading: true, title: 'Loading...' }
-          : tab
-      ));
+      setTabs((prev) =>
+        prev.map((tab) =>
+          tab.id === activeTabId ? { ...tab, url, isLoading: true, title: 'Loading...' } : tab,
+        ),
+      );
 
       // Update tab info after navigation
       setTimeout(() => updateTabInfo(activeTabId), 1000);
@@ -102,18 +104,20 @@ function App() {
     try {
       const info = await browserAPI.getTabInfo(tabId);
       if (info) {
-        setTabs(prev => prev.map(tab => 
-          tab.id === tabId 
-            ? { ...tab, url: info.url, title: info.title || 'Untitled', isLoading: false }
-            : tab
-        ));
-        
-        setTabNavInfo(prev => ({
+        setTabs((prev) =>
+          prev.map((tab) =>
+            tab.id === tabId
+              ? { ...tab, url: info.url, title: info.title || 'Untitled', isLoading: false }
+              : tab,
+          ),
+        );
+
+        setTabNavInfo((prev) => ({
           ...prev,
           [tabId]: {
             canGoBack: info.canGoBack,
-            canGoForward: info.canGoForward
-          }
+            canGoForward: info.canGoForward,
+          },
         }));
       }
     } catch (error) {
@@ -171,7 +175,7 @@ function App() {
 
   if (!browserAPI) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex h-screen items-center justify-center">
         <div className="text-lg">Loading...</div>
       </div>
     );
@@ -180,14 +184,14 @@ function App() {
   return (
     <LiveblocksProvider authEndpoint="http://localhost:3002/liveblocks-auth">
       <RoomProvider id="browser-room" initialPresence={{}}>
-        <div className="h-screen flex flex-col">
+        <div className="flex h-screen flex-col">
           <TabBar
             tabs={tabs}
             onTabClick={switchToTab}
             onTabClose={closeTab}
             onNewTab={() => createNewTab()}
           />
-          
+
           <AddressBar
             activeTab={activeTab}
             onNavigate={navigateTab}
@@ -205,33 +209,36 @@ function App() {
               }
             }}
           />
-          
-          <div ref={contentRef} className="flex-1 bg-white relative">
-            {activeTab ? (
-              <div className="h-full flex items-center justify-center text-gray-500">
-                <div className="text-center">
-                  <div className="text-lg mb-2">{activeTab.title}</div>
-                  <div className="text-sm">{activeTab.url}</div>
-                  <div className="text-xs mt-4 text-gray-400">
-                    Web content will be displayed here via Electron BrowserView
+
+          <div className="flex flex-1 flex-row">
+            <div ref={contentRef} className="relative flex-1 bg-white">
+              {activeTab ? (
+                <div className="flex h-full items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <div className="mb-2 text-lg">{activeTab.title}</div>
+                    <div className="text-sm">{activeTab.url}</div>
+                    <div className="mt-4 text-xs text-gray-400">
+                      Web content will be displayed here via Electron BrowserView
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-500">
-                <div className="text-center">
-                  <div className="text-lg mb-4">Welcome to AI Web Browser</div>
-                  <button
-                    onClick={() => createNewTab()}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  >
-                    Create New Tab
-                  </button>
+              ) : (
+                <div className="flex h-full items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <div className="mb-4 text-lg">Welcome to AI Web Browser</div>
+                    <button
+                      onClick={() => createNewTab()}
+                      className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                    >
+                      Create New Tab
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+            <div className="h-10 w-[300px] bg-red-500">AI CHATM</div>
           </div>
-        </div> 
+        </div>
       </RoomProvider>
     </LiveblocksProvider>
   );
