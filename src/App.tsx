@@ -214,7 +214,7 @@ function App() {
   return (
     <LiveblocksProvider authEndpoint="http://localhost:3002/liveblocks-auth">
       <RoomProvider id="browser-room" initialPresence={{}}>
-        <div className="flex h-screen flex-col">
+        <div className="flex h-screen flex-col bg-neutral-100/30">
           <div className="p-2 pb-0 pl-24">
             <div className="relative flex h-8 flex-row justify-between">
               <div className="absolute inset-0" style={{ WebkitAppRegion: 'drag' } as any}></div>
