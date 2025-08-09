@@ -50,7 +50,7 @@ const AddressBar: React.FC<AddressBarProps> = ({
   };
 
   return (
-    <div className="flex items-center gap-2 border-b bg-gray-100 px-4 py-2">
+    <div className="flex items-center gap-2 border-b bg-white/40 px-4 py-2 backdrop-blur-md">
       <div className="flex items-center gap-1">
         <button
           onClick={onBack}
@@ -99,7 +99,7 @@ const AddressBar: React.FC<AddressBarProps> = ({
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Enter URL or search..."
-          className="w-full rounded-md border px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-md border border-white/40 bg-white/60 px-3 py-1 backdrop-blur-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </form>
     </div>

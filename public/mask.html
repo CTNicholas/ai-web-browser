@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' 'unsafe-inline' data:;"
+    />
+    <style>
+      :root {
+        --corner-color: #f5f5f5;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: transparent;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      .round-mask {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+      .corner {
+        border-radius: 0;
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        pointer-events: none;
+      }
+      .corner-tl {
+        top: 0;
+        left: 0;
+      }
+      .corner-tr {
+        top: 0;
+        right: 0;
+      }
+      .corner-br {
+        bottom: 0;
+        right: 0;
+      }
+      .corner-bl {
+        bottom: 0;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="round-mask">
+      <svg
+        class="corner corner-tl"
+        viewBox="0 0 50 50"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path d="M 0,50 A 50,50 0 0,1 50,0 L 0,0 Z" fill="var(--corner-color)" />
+      </svg>
+      <svg
+        class="corner corner-tr"
+        viewBox="0 0 50 50"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M 0,50 A 50,50 0 0,1 50,0 L 0,0 Z"
+          fill="var(--corner-color)"
+          transform="rotate(90 25 25)"
+        />
+      </svg>
+      <svg
+        class="corner corner-br"
+        viewBox="0 0 50 50"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M 0,50 A 50,50 0 0,1 50,0 L 0,0 Z"
+          fill="var(--corner-color)"
+          transform="rotate(180 25 25)"
+        />
+      </svg>
+      <svg
+        class="corner corner-bl"
+        viewBox="0 0 50 50"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M 0,50 A 50,50 0 0,1 50,0 L 0,0 Z"
+          fill="var(--corner-color)"
+          transform="rotate(270 25 25)"
+        />
+      </svg>
+
+      <!-- Corner color boxes -->
+      <div class="color-box color-box-tl"></div>
+      <div class="color-box color-box-tr"></div>
+      <div class="color-box color-box-br"></div>
+      <div class="color-box color-box-bl"></div>
+    </div>
+  </body>
+</html>

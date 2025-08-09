@@ -16,6 +16,33 @@ function App() {
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId) || null;
 
+  // Helper to push current flex content bounds to Electron main
+  const sendLayoutBounds = async () => {
+    try {
+      if (typeof window === 'undefined' || !window.require) return;
+      const el = contentRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const { ipcRenderer } = window.require('electron');
+      await ipcRenderer.invoke('layout-browserview', {
+        x: Math.round(r.left),
+        y: Math.round(r.top),
+        width: Math.round(r.width),
+        height: Math.round(r.height),
+      });
+    } catch (e) {
+      // no-op in web
+    }
+  };
+
+  // Schedule bounds send on next paint (helps initial mount before layout stabilizes)
+  const sendLayoutBoundsOnNextFrame = () => {
+    try {
+      if (typeof window === 'undefined') return;
+      requestAnimationFrame(() => requestAnimationFrame(() => void sendLayoutBounds()));
+    } catch {}
+  };
+
   const createNewTab = async (url: string = 'https://www.google.com') => {
     if (!browserAPI) return;
 
@@ -32,6 +59,7 @@ function App() {
       setTabs((prev) => prev.map((t) => ({ ...t, isActive: false })).concat(newTab));
       setActiveTabId(result.id);
       await browserAPI.switchTab(result.id);
+      sendLayoutBoundsOnNextFrame();
 
       // Update tab info after a short delay
       setTimeout(() => updateTabInfo(result.id), 1000);
@@ -47,6 +75,7 @@ function App() {
       await browserAPI.switchTab(tabId);
       setTabs((prev) => prev.map((tab) => ({ ...tab, isActive: tab.id === tabId })));
       setActiveTabId(tabId);
+      sendLayoutBoundsOnNextFrame();
       await updateTabInfo(tabId);
     } catch (error) {
       console.error('Failed to switch tab:', error);
@@ -69,6 +98,7 @@ function App() {
           nextTab.isActive = true;
           setActiveTabId(nextTab.id);
           browserAPI.switchTab(nextTab.id);
+          sendLayoutBoundsOnNextFrame();
         } else if (activeTabId === tabId) {
           setActiveTabId(null);
         }
@@ -210,33 +240,38 @@ function App() {
             }}
           />
 
-          <div className="flex flex-1 flex-row">
-            <div ref={contentRef} className="relative flex-1 bg-white">
-              {activeTab ? (
-                <div className="flex h-full items-center justify-center text-gray-500">
-                  <div className="text-center">
-                    <div className="mb-2 text-lg">{activeTab.title}</div>
-                    <div className="text-sm">{activeTab.url}</div>
-                    <div className="mt-4 text-xs text-gray-400">
-                      Web content will be displayed here via Electron BrowserView
+          <div className="m-2 flex flex-1 flex-row">
+            <div className="relative flex-1">
+              <div className="relative h-full w-full overflow-hidden">
+                {/* Measured area for the BrowserView */}
+                <div ref={contentRef} className="absolute inset-0" />
+
+                {activeTab ? (
+                  <div className="pointer-events-none flex h-full items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <div className="mb-2 text-lg">{activeTab.title}</div>
+                      <div className="text-sm">{activeTab.url}</div>
+                      <div className="mt-4 text-xs text-gray-400">
+                        Web content will be displayed here via Electron BrowserView
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="flex h-full items-center justify-center text-gray-500">
-                  <div className="text-center">
-                    <div className="mb-4 text-lg">Welcome to AI Web Browser</div>
-                    <button
-                      onClick={() => createNewTab()}
-                      className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-                    >
-                      Create New Tab
-                    </button>
+                ) : (
+                  <div className="flex h-full items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <div className="mb-4 text-lg">Welcome to AI Web Browser</div>
+                      <button
+                        onClick={() => createNewTab()}
+                        className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                      >
+                        Create New Tab
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-            <div className="h-10 w-[300px] bg-red-500">AI CHATM</div>
+            <div className="w-[300px] border-l bg-gray-50">AI CHATM</div>
           </div>
         </div>
       </RoomProvider>

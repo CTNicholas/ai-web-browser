@@ -11,12 +11,30 @@ let browserViews = new Map();
 let activeViewId = null;
 let contentBounds = { x: 0, y: 60, width: 1200, height: 740 };
 
+// --- Rounded-corner mask overlay ---
+let maskWindow = null;
+
+function syncMaskToContent() {
+  if (!mainWindow || !maskWindow) return;
+  // Use the content bounds so we account for title bar and frame offsets
+  const contentArea = mainWindow.getContentBounds();
+  maskWindow.setBounds({
+    x: contentArea.x + contentBounds.x,
+    y: contentArea.y + contentBounds.y,
+    width: contentBounds.width,
+    height: contentBounds.height,
+  });
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     titleBarStyle: 'hiddenInset', // Hide default title bar but keep traffic lights
     trafficLightPosition: { x: 20, y: 13 }, // Position the ●●● buttons
+    vibrancy: 'under-window', // Add vibrancy effect
+    visualEffectState: 'active', // Ensure vibrancy is applied even when window is active
+    backgroundColor: '#00000000', // Transparent background so frosted areas show vibrancy
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -30,6 +48,44 @@ function createWindow() {
     : `file://${path.join(__dirname, '../build/index.html')}`;
 
   mainWindow.loadURL(startUrl);
+
+  // --- MASK WINDOW (rounded corners over the BrowserView) ---
+  maskWindow = new BrowserWindow({
+    parent: mainWindow,
+    modal: false,
+    frame: false,
+    transparent: true,
+    focusable: false,
+    hasShadow: false,
+    resizable: false,
+    movable: false,
+    backgroundColor: '#00000000',
+    show: true,
+    roundedCorners: false,
+  });
+
+  // Keep it above the BrowserView but let clicks pass through
+  maskWindow.setIgnoreMouseEvents(true, { forward: true });
+
+  const maskUrl = isDev
+    ? `http://localhost:3000/mask.html`
+    : `file://${path.join(__dirname, '../build/mask.html')}`;
+  maskWindow.loadURL(maskUrl);
+
+  // Sync position/size
+  syncMaskToContent();
+  mainWindow.on('move', syncMaskToContent);
+  mainWindow.on('resize', syncMaskToContent);
+  mainWindow.on('focus', syncMaskToContent);
+
+  mainWindow.on('closed', () => {
+    if (maskWindow) {
+      try {
+        maskWindow.close();
+      } catch {}
+    }
+    maskWindow = null;
+  });
 
   if (isDev) {
     // Don't auto-open DevTools, let user open manually with Cmd+Option+I
@@ -51,6 +107,9 @@ ipcMain.handle('create-tab', (event, url = 'https://www.google.com') => {
       webSecurity: true,
     },
   });
+
+  // Set rounded corners using webContents setWindowOpenHandler
+  browserView.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 
   browserViews.set(viewId, browserView);
 
@@ -126,6 +185,8 @@ ipcMain.handle('layout-browserview', (event, bounds) => {
       browserView.setBounds(contentBounds);
     }
   }
+  // Keep the rounded mask in sync with content area
+  syncMaskToContent();
   return true;
 });
 
