@@ -17,6 +17,8 @@ export const useBrowserAPI = (): BrowserAPI | null => {
           navigateTab: (viewId: string, url: string) =>
             ipcRenderer.invoke('navigate-tab', viewId, url),
           getTabInfo: (viewId: string) => ipcRenderer.invoke('get-tab-info', viewId),
+          goBack: (viewId: string) => ipcRenderer.invoke('tab-go-back', viewId),
+          goForward: (viewId: string) => ipcRenderer.invoke('tab-go-forward', viewId),
         };
 
         setApi(browserAPI);
@@ -47,6 +49,14 @@ export const useBrowserAPI = (): BrowserAPI | null => {
             canGoBack: false,
             canGoForward: false,
           }),
+          goBack: async (viewId: string) => {
+            console.log('Mock go back:', viewId);
+            return true;
+          },
+          goForward: async (viewId: string) => {
+            console.log('Mock go forward:', viewId);
+            return true;
+          },
         };
 
         setApi(mockAPI);
@@ -65,6 +75,8 @@ export const useBrowserAPI = (): BrowserAPI | null => {
           canGoBack: false,
           canGoForward: false,
         }),
+        goBack: async () => true,
+        goForward: async () => true,
       };
       setApi(fallbackAPI);
     }

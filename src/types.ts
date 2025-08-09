@@ -17,6 +17,8 @@ export interface BrowserAPI {
     canGoBack: boolean;
     canGoForward: boolean;
   } | null>;
+  goBack: (viewId: string) => Promise<boolean>;
+  goForward: (viewId: string) => Promise<boolean>;
 }
 
 declare global {

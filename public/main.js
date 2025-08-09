@@ -1,4 +1,4 @@
-import { app, BrowserWindow, BrowserView, ipcMain } from 'electron';
+import { app, BrowserWindow, WebContentsView, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -7,24 +7,9 @@ const __dirname = path.dirname(__filename);
 const isDev = process.env.NODE_ENV === 'development';
 
 let mainWindow;
-let browserViews = new Map();
+let webContentsViews = new Map();
 let activeViewId = null;
 let contentBounds = { x: 0, y: 60, width: 1200, height: 740 };
-
-// --- Rounded-corner mask overlay ---
-let maskWindow = null;
-
-function syncMaskToContent() {
-  if (!mainWindow || !maskWindow) return;
-  // Use the content bounds so we account for title bar and frame offsets
-  const contentArea = mainWindow.getContentBounds();
-  maskWindow.setBounds({
-    x: contentArea.x + contentBounds.x,
-    y: contentArea.y + contentBounds.y,
-    width: contentBounds.width,
-    height: contentBounds.height,
-  });
-}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -35,6 +20,7 @@ function createWindow() {
     vibrancy: 'under-window', // Add vibrancy effect
     visualEffectState: 'active', // Ensure vibrancy is applied even when window is active
     backgroundColor: '#00000000', // Transparent background so frosted areas show vibrancy
+    roundedCorners: true, // Add rounded corners to the main window
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -49,42 +35,15 @@ function createWindow() {
 
   mainWindow.loadURL(startUrl);
 
-  // --- MASK WINDOW (rounded corners over the BrowserView) ---
-  maskWindow = new BrowserWindow({
-    parent: mainWindow,
-    modal: false,
-    frame: false,
-    transparent: true,
-    focusable: false,
-    hasShadow: false,
-    resizable: false,
-    movable: false,
-    backgroundColor: '#00000000',
-    show: true,
-    roundedCorners: false,
-  });
-
-  // Keep it above the BrowserView but let clicks pass through
-  maskWindow.setIgnoreMouseEvents(true, { forward: true });
-
-  const maskUrl = isDev
-    ? `http://localhost:3000/mask.html`
-    : `file://${path.join(__dirname, '../build/mask.html')}`;
-  maskWindow.loadURL(maskUrl);
-
-  // Sync position/size
-  syncMaskToContent();
-  mainWindow.on('move', syncMaskToContent);
-  mainWindow.on('resize', syncMaskToContent);
-  mainWindow.on('focus', syncMaskToContent);
-
   mainWindow.on('closed', () => {
-    if (maskWindow) {
+    // Clean up web contents views
+    for (const [viewId, webContentsView] of webContentsViews) {
       try {
-        maskWindow.close();
+        mainWindow.contentView.removeChildView(webContentsView);
+        webContentsView.webContents.destroy();
       } catch {}
     }
-    maskWindow = null;
+    webContentsViews.clear();
   });
 
   if (isDev) {
@@ -100,7 +59,7 @@ function createWindow() {
 ipcMain.handle('create-tab', (event, url = 'https://www.google.com') => {
   const viewId = Date.now().toString();
 
-  const browserView = new BrowserView({
+  const webContentsView = new WebContentsView({
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -108,18 +67,17 @@ ipcMain.handle('create-tab', (event, url = 'https://www.google.com') => {
     },
   });
 
-  // Set rounded corners using webContents setWindowOpenHandler
-  browserView.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  // Handle new window requests
+  webContentsView.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 
-  browserViews.set(viewId, browserView);
+  webContentsViews.set(viewId, webContentsView);
 
   // Set initial bounds (will be adjusted by renderer)
-  browserView.setBounds(contentBounds);
-  browserView.webContents.loadURL(url);
+  webContentsView.setBounds(contentBounds);
+  webContentsView.setBorderRadius(5);
+  webContentsView.webContents.loadURL(url);
 
-  // Hide initially
-  mainWindow.setBrowserView(null);
-
+  // Don't add to window initially - will be added when switched to
   return {
     id: viewId,
     url: url,
@@ -128,13 +86,20 @@ ipcMain.handle('create-tab', (event, url = 'https://www.google.com') => {
 });
 
 ipcMain.handle('switch-tab', (event, viewId) => {
-  const browserView = browserViews.get(viewId);
-  if (browserView) {
-    mainWindow.setBrowserView(browserView);
+  const webContentsView = webContentsViews.get(viewId);
+  if (webContentsView) {
+    // Remove currently active view
+    if (activeViewId && webContentsViews.has(activeViewId)) {
+      const currentView = webContentsViews.get(activeViewId);
+      mainWindow.contentView.removeChildView(currentView);
+    }
+
+    // Add the new view
+    mainWindow.contentView.addChildView(webContentsView);
     activeViewId = viewId;
 
     // Use latest layout bounds from renderer
-    browserView.setBounds(contentBounds);
+    webContentsView.setBounds(contentBounds);
 
     return true;
   }
@@ -142,51 +107,67 @@ ipcMain.handle('switch-tab', (event, viewId) => {
 });
 
 ipcMain.handle('close-tab', (event, viewId) => {
-  const browserView = browserViews.get(viewId);
-  if (browserView) {
+  const webContentsView = webContentsViews.get(viewId);
+  if (webContentsView) {
     if (activeViewId === viewId) {
-      mainWindow.setBrowserView(null);
+      mainWindow.contentView.removeChildView(webContentsView);
       activeViewId = null;
     }
-    browserView.webContents.destroy();
-    browserViews.delete(viewId);
+    webContentsView.webContents.destroy();
+    webContentsViews.delete(viewId);
     return true;
   }
   return false;
 });
 
 ipcMain.handle('navigate-tab', (event, viewId, url) => {
-  const browserView = browserViews.get(viewId);
-  if (browserView) {
-    browserView.webContents.loadURL(url);
+  const webContentsView = webContentsViews.get(viewId);
+  if (webContentsView) {
+    webContentsView.webContents.loadURL(url);
     return true;
   }
   return false;
 });
 
 ipcMain.handle('get-tab-info', (event, viewId) => {
-  const browserView = browserViews.get(viewId);
-  if (browserView) {
+  const webContentsView = webContentsViews.get(viewId);
+  if (webContentsView) {
     return {
-      url: browserView.webContents.getURL(),
-      title: browserView.webContents.getTitle(),
-      canGoBack: browserView.webContents.canGoBack(),
-      canGoForward: browserView.webContents.canGoForward(),
+      url: webContentsView.webContents.getURL(),
+      title: webContentsView.webContents.getTitle(),
+      canGoBack: webContentsView.webContents.navigationHistory.canGoBack(),
+      canGoForward: webContentsView.webContents.navigationHistory.canGoForward(),
     };
   }
   return null;
 });
 
+ipcMain.handle('tab-go-back', (event, viewId) => {
+  const webContentsView = webContentsViews.get(viewId);
+  if (webContentsView && webContentsView.webContents.navigationHistory.canGoBack()) {
+    webContentsView.webContents.navigationHistory.goBack();
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('tab-go-forward', (event, viewId) => {
+  const webContentsView = webContentsViews.get(viewId);
+  if (webContentsView && webContentsView.webContents.navigationHistory.canGoForward()) {
+    webContentsView.webContents.navigationHistory.goForward();
+    return true;
+  }
+  return false;
+});
+
 ipcMain.handle('layout-browserview', (event, bounds) => {
   contentBounds = bounds;
   if (activeViewId) {
-    const browserView = browserViews.get(activeViewId);
-    if (browserView) {
-      browserView.setBounds(contentBounds);
+    const webContentsView = webContentsViews.get(activeViewId);
+    if (webContentsView) {
+      webContentsView.setBounds(contentBounds);
     }
   }
-  // Keep the rounded mask in sync with content area
-  syncMaskToContent();
   return true;
 });
 

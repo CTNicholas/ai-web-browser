@@ -227,11 +227,19 @@ function App() {
             onNavigate={navigateTab}
             canGoBack={currentNavInfo?.canGoBack}
             canGoForward={currentNavInfo?.canGoForward}
-            onBack={() => {
-              // Implement back navigation
+            onBack={async () => {
+              if (activeTabId && browserAPI) {
+                await browserAPI.goBack(activeTabId);
+                // Update tab info after navigation
+                setTimeout(() => updateTabInfo(activeTabId), 500);
+              }
             }}
-            onForward={() => {
-              // Implement forward navigation
+            onForward={async () => {
+              if (activeTabId && browserAPI) {
+                await browserAPI.goForward(activeTabId);
+                // Update tab info after navigation
+                setTimeout(() => updateTabInfo(activeTabId), 500);
+              }
             }}
             onRefresh={() => {
               if (activeTab) {
@@ -240,9 +248,9 @@ function App() {
             }}
           />
 
-          <div className="m-2 flex flex-1 flex-row">
+          <div className="m-2 flex flex-1 flex-row gap-2">
             <div className="relative flex-1">
-              <div className="relative h-full w-full overflow-hidden">
+              <div className="relative h-full w-full overflow-hidden rounded-lg">
                 {/* Measured area for the BrowserView */}
                 <div ref={contentRef} className="absolute inset-0" />
 
@@ -252,7 +260,7 @@ function App() {
                       <div className="mb-2 text-lg">{activeTab.title}</div>
                       <div className="text-sm">{activeTab.url}</div>
                       <div className="mt-4 text-xs text-gray-400">
-                        Web content will be displayed here via Electron BrowserView
+                        Web content is displayed here via Electron BrowserView
                       </div>
                     </div>
                   </div>
@@ -271,7 +279,12 @@ function App() {
                 )}
               </div>
             </div>
-            <div className="w-[300px] border-l bg-gray-50">AI CHATM</div>
+            <div className="w-[340px] rounded-[5px] border-l bg-gray-50">
+              <div className="p-4">
+                <h3 className="mb-2 font-medium text-gray-700">AI Chat</h3>
+                <div className="text-sm text-gray-500">AI assistant will appear here</div>
+              </div>
+            </div>
           </div>
         </div>
       </RoomProvider>
