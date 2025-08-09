@@ -16,7 +16,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     titleBarStyle: 'hiddenInset', // Hide default title bar but keep traffic lights
-    trafficLightPosition: { x: 20, y: 13 }, // Position the ●●● buttons
+    trafficLightPosition: { x: 20, y: 14 }, // Position the ●●● buttons
     vibrancy: 'under-window', // Add vibrancy effect
     visualEffectState: 'active', // Ensure vibrancy is applied even when window is active
     backgroundColor: '#00000000', // Transparent background so frosted areas show vibrancy
@@ -74,7 +74,7 @@ ipcMain.handle('create-tab', (event, url = 'https://www.google.com') => {
 
   // Set initial bounds (will be adjusted by renderer)
   webContentsView.setBounds(contentBounds);
-  webContentsView.setBorderRadius(5);
+  webContentsView.setBorderRadius(3);
   webContentsView.webContents.loadURL(url);
 
   // Don't add to window initially - will be added when switched to

@@ -50,12 +50,12 @@ const AddressBar: React.FC<AddressBarProps> = ({
   };
 
   return (
-    <div className="flex items-center gap-2 border-b bg-white/40 px-4 py-2 backdrop-blur-md">
-      <div className="flex items-center gap-1">
+    <div className="flex h-full items-center gap-2 p-0 pb-0 backdrop-blur-md">
+      {/* <div className="flex items-center gap-1">
         <button
           onClick={onBack}
           disabled={!canGoBack}
-          className="rounded p-2 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded p-2 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
           title="Go back"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +71,7 @@ const AddressBar: React.FC<AddressBarProps> = ({
         <button
           onClick={onForward}
           disabled={!canGoForward}
-          className="rounded p-2 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded p-2 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
           title="Go forward"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@ const AddressBar: React.FC<AddressBarProps> = ({
           </svg>
         </button>
 
-        <button onClick={onRefresh} className="rounded p-2 hover:bg-gray-200" title="Refresh">
+        <button onClick={onRefresh} className="rounded p-2 hover:bg-neutral-200" title="Refresh">
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -89,9 +89,9 @@ const AddressBar: React.FC<AddressBarProps> = ({
             />
           </svg>
         </button>
-      </div>
+      </div> */}
 
-      <form onSubmit={handleSubmit} className="flex-1">
+      <form onSubmit={handleSubmit} className="h-full flex-1">
         <input
           ref={inputRef}
           type="text"
@@ -99,7 +99,7 @@ const AddressBar: React.FC<AddressBarProps> = ({
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Enter URL or search..."
-          className="w-full rounded-md border border-white/40 bg-white/60 px-3 py-1 backdrop-blur-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-full w-full rounded-md bg-transparent px-3 py-1 text-sm placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </form>
     </div>

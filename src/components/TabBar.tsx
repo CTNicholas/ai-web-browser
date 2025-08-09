@@ -14,19 +14,14 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
   };
 
   return (
-    <div
-      className="flex items-center border-b bg-white/50 backdrop-blur-md"
-      style={{ WebkitAppRegion: 'drag' } as any}
-    >
+    <div className="z-10 flex h-full grow items-center">
       {/* Spacer for macOS traffic lights (●●●) */}
-      <div className="h-8 w-24 flex-shrink-0" style={{ WebkitAppRegion: 'drag' } as any}></div>
-
-      <div className="flex flex-1 overflow-x-auto">
+      <div className="flex h-full flex-1 gap-1 overflow-x-auto">
         {tabs.map((tab) => (
           <div
             key={tab.id}
-            className={`group flex w-[180px] max-w-xs cursor-pointer items-center border-r px-3 py-2 ${
-              tab.isActive ? 'border-b-2 border-blue-500 bg-white' : 'bg-gray-50 hover:bg-gray-200'
+            className={`group flex h-full w-[180px] max-w-xs cursor-pointer items-center rounded-[5px] rounded-b-none px-2 ${
+              tab.isActive ? 'bg-white/70' : 'bg-white/0 hover:bg-white/40'
             } `}
             style={{ WebkitAppRegion: 'no-drag' } as any}
             onClick={() => onTabClick(tab.id)}
@@ -39,16 +34,16 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
           >
             <div className="flex min-w-0 flex-1 items-center">
               {tab.isLoading ? (
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-[2px] border-neutral-500 border-t-transparent" />
               ) : (
-                <div className="mr-2 h-4 w-4 flex-shrink-0 rounded-sm bg-gray-400" />
+                <div className="mr-2 h-4 w-4 flex-shrink-0 rounded-sm bg-neutral-400" />
               )}
-              <span className="truncate text-sm">{truncateTitle(tab.title || 'New Tab')}</span>
+              <span className="truncate text-xs">{truncateTitle(tab.title || 'New Tab')}</span>
             </div>
 
             <button
               onClick={(e) => onTabClose(tab.id, e)}
-              className="ml-2 rounded p-1 opacity-0 transition-opacity hover:bg-gray-300 group-hover:opacity-100"
+              className="ml-2 rounded p-1 text-neutral-600 opacity-0 transition-opacity hover:bg-white/50 hover:text-neutral-800 group-hover:opacity-100"
               title="Close tab"
             >
               <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,7 +59,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
         ))}
         <button
           onClick={onNewTab}
-          className="flex h-10 w-10 items-center justify-center transition-colors hover:bg-white/40"
+          className="flex aspect-square h-full items-center justify-center rounded-t transition-colors hover:bg-white/40"
           style={{ WebkitAppRegion: 'no-drag' } as any}
           title="New tab"
         >

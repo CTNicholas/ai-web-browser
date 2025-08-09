@@ -215,57 +215,60 @@ function App() {
     <LiveblocksProvider authEndpoint="http://localhost:3002/liveblocks-auth">
       <RoomProvider id="browser-room" initialPresence={{}}>
         <div className="flex h-screen flex-col">
-          <TabBar
-            tabs={tabs}
-            onTabClick={switchToTab}
-            onTabClose={closeTab}
-            onNewTab={() => createNewTab()}
-          />
-
-          <AddressBar
-            activeTab={activeTab}
-            onNavigate={navigateTab}
-            canGoBack={currentNavInfo?.canGoBack}
-            canGoForward={currentNavInfo?.canGoForward}
-            onBack={async () => {
-              if (activeTabId && browserAPI) {
-                await browserAPI.goBack(activeTabId);
-                // Update tab info after navigation
-                setTimeout(() => updateTabInfo(activeTabId), 500);
-              }
-            }}
-            onForward={async () => {
-              if (activeTabId && browserAPI) {
-                await browserAPI.goForward(activeTabId);
-                // Update tab info after navigation
-                setTimeout(() => updateTabInfo(activeTabId), 500);
-              }
-            }}
-            onRefresh={() => {
-              if (activeTab) {
-                navigateTab(activeTab.url);
-              }
-            }}
-          />
-
-          <div className="m-2 flex flex-1 flex-row gap-2">
-            <div className="relative flex-1">
+          <div className="p-2 pb-0 pl-24">
+            <div className="relative flex h-8 flex-row justify-between">
+              <div className="absolute inset-0" style={{ WebkitAppRegion: 'drag' } as any}></div>
+              {/* <AddressBar
+                activeTab={activeTab}
+                onNavigate={navigateTab}
+                canGoBack={currentNavInfo?.canGoBack}
+                canGoForward={currentNavInfo?.canGoForward}
+                onBack={async () => {
+                  if (activeTabId && browserAPI) {
+                    await browserAPI.goBack(activeTabId);
+                    // Update tab info after navigation
+                    setTimeout(() => updateTabInfo(activeTabId), 500);
+                  }
+                }}
+                onForward={async () => {
+                  if (activeTabId && browserAPI) {
+                    await browserAPI.goForward(activeTabId);
+                    // Update tab info after navigation
+                    setTimeout(() => updateTabInfo(activeTabId), 500);
+                  }
+                }}
+                onRefresh={() => {
+                  if (activeTab) {
+                    navigateTab(activeTab.url);
+                  }
+                }}
+              /> */}
+              <TabBar
+                tabs={tabs}
+                onTabClick={switchToTab}
+                onTabClose={closeTab}
+                onNewTab={() => createNewTab()}
+              />
+            </div>
+          </div>
+          <div className="m-2 mt-0 flex flex-1 flex-row gap-2 rounded-[5px] bg-white/70 p-2 shadow">
+            <div className="relative flex-1 rounded-[3px] border border-neutral-200 shadow-sm">
               <div className="relative h-full w-full overflow-hidden rounded-lg">
                 {/* Measured area for the BrowserView */}
                 <div ref={contentRef} className="absolute inset-0" />
 
                 {activeTab ? (
-                  <div className="pointer-events-none flex h-full items-center justify-center text-gray-500">
+                  <div className="pointer-events-none flex h-full items-center justify-center text-neutral-500">
                     <div className="text-center">
                       <div className="mb-2 text-lg">{activeTab.title}</div>
                       <div className="text-sm">{activeTab.url}</div>
-                      <div className="mt-4 text-xs text-gray-400">
+                      <div className="mt-4 text-xs text-neutral-400">
                         Web content is displayed here via Electron BrowserView
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex h-full items-center justify-center text-gray-500">
+                  <div className="flex h-full items-center justify-center text-neutral-500">
                     <div className="text-center">
                       <div className="mb-4 text-lg">Welcome to AI Web Browser</div>
                       <button
@@ -279,10 +282,10 @@ function App() {
                 )}
               </div>
             </div>
-            <div className="w-[340px] rounded-[5px] border-l bg-gray-50">
+            <div className="w-[340px] rounded-[3px] border bg-white shadow-sm">
               <div className="p-4">
-                <h3 className="mb-2 font-medium text-gray-700">AI Chat</h3>
-                <div className="text-sm text-gray-500">AI assistant will appear here</div>
+                <h3 className="mb-2 font-medium text-neutral-700">AI Chat</h3>
+                <div className="text-sm text-neutral-500">AI assistant will appear here</div>
               </div>
             </div>
           </div>
