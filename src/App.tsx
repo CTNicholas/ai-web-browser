@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tab } from './types';
 import { useBrowserAPI } from './hooks/useBrowserAPI';
+import { useWebpageContent } from './hooks/useWebpageContent';
 import TabBar from './components/TabBar';
 // import AddressBar from './components/AddressBar';
 import { LiveblocksProvider, RoomProvider } from '@liveblocks/react';
@@ -13,6 +14,7 @@ function App() {
     [key: string]: { canGoBack: boolean; canGoForward: boolean };
   }>({});
   const browserAPI = useBrowserAPI();
+  const webpageContent = useWebpageContent(activeTabId);
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId) || null;
 
@@ -414,6 +416,23 @@ function App() {
               <div className="p-4">
                 <h3 className="mb-2 font-medium text-neutral-700">AI Chat</h3>
                 <div className="text-sm text-neutral-500">AI assistant will appear here</div>
+
+                {/* Debug: Show webpage content status */}
+                <div className="mt-4 text-xs text-neutral-400">
+                  <div>Content Status: {webpageContent.isLoading ? 'Loading...' : 'Ready'}</div>
+                  {webpageContent.error && (
+                    <div className="text-red-500">Error: {webpageContent.error}</div>
+                  )}
+                  {webpageContent.title && (
+                    <div className="mt-2">
+                      <div className="font-medium">Page: {webpageContent.title}</div>
+                      <div className="mt-1 max-h-32 overflow-y-auto rounded bg-neutral-50 p-2 text-[10px]">
+                        {webpageContent.markdown.substring(0, 300)}
+                        {webpageContent.markdown.length > 300 ? '...' : ''}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

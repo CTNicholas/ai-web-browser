@@ -17,6 +17,11 @@ export interface BrowserAPI {
     canGoBack: boolean;
     canGoForward: boolean;
   } | null>;
+  getTabContent: (viewId: string) => Promise<{
+    html: string;
+    url: string;
+    title: string;
+  } | null>;
   goBack: (viewId: string) => Promise<boolean>;
   goForward: (viewId: string) => Promise<boolean>;
 }

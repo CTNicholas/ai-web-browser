@@ -70,6 +70,25 @@ ipcMain.handle('create-tab', (event, url = 'https://www.google.com') => {
   // Handle new window requests
   webContentsView.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 
+  // Listen for navigation events to notify renderer about content changes
+  webContentsView.webContents.on('did-finish-load', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('tab-content-changed', viewId);
+    }
+  });
+
+  webContentsView.webContents.on('did-navigate', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('tab-content-changed', viewId);
+    }
+  });
+
+  webContentsView.webContents.on('did-navigate-in-page', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('tab-content-changed', viewId);
+    }
+  });
+
   webContentsViews.set(viewId, webContentsView);
 
   // Set initial bounds (will be adjusted by renderer)
@@ -158,6 +177,59 @@ ipcMain.handle('tab-go-forward', (event, viewId) => {
     return true;
   }
   return false;
+});
+
+ipcMain.handle('get-tab-content', async (event, viewId) => {
+  const webContentsView = webContentsViews.get(viewId);
+  if (webContentsView) {
+    try {
+      // Execute JavaScript in the web page to get the HTML content
+      const htmlContent = await webContentsView.webContents.executeJavaScript(`
+        (() => {
+          try {
+            // Clone the document to avoid modifying the original
+            const docClone = document.cloneNode(true);
+            const bodyClone = docClone.body || docClone.documentElement;
+            
+            if (!bodyClone) return '';
+            
+            // Remove unwanted elements from the clone
+            const unwantedSelectors = [
+              'script', 'style', 'noscript', 'iframe', 'object', 'embed',
+              'nav', 'header', 'footer', 'aside', 
+              '.nav', '.navigation', '.menu', '.sidebar', '.advertisement', '.ad',
+              '[class*="nav"]', '[class*="menu"]', '[class*="sidebar"]'
+            ];
+            
+            unwantedSelectors.forEach(selector => {
+              try {
+                const elements = bodyClone.querySelectorAll(selector);
+                elements.forEach(el => el.remove());
+              } catch (e) {
+                // Ignore selector errors
+              }
+            });
+            
+            // Get the cleaned HTML
+            return bodyClone.innerHTML || bodyClone.textContent || '';
+          } catch (error) {
+            console.error('Error extracting content:', error);
+            return document.body ? document.body.innerHTML : '';
+          }
+        })();
+      `);
+
+      return {
+        html: htmlContent,
+        url: webContentsView.webContents.getURL(),
+        title: webContentsView.webContents.getTitle(),
+      };
+    } catch (error) {
+      console.error('Error extracting content:', error);
+      return null;
+    }
+  }
+  return null;
 });
 
 ipcMain.handle('layout-browserview', (event, bounds) => {

@@ -17,6 +17,7 @@ export const useBrowserAPI = (): BrowserAPI | null => {
           navigateTab: (viewId: string, url: string) =>
             ipcRenderer.invoke('navigate-tab', viewId, url),
           getTabInfo: (viewId: string) => ipcRenderer.invoke('get-tab-info', viewId),
+          getTabContent: (viewId: string) => ipcRenderer.invoke('get-tab-content', viewId),
           goBack: (viewId: string) => ipcRenderer.invoke('tab-go-back', viewId),
           goForward: (viewId: string) => ipcRenderer.invoke('tab-go-forward', viewId),
         };
@@ -49,6 +50,11 @@ export const useBrowserAPI = (): BrowserAPI | null => {
             canGoBack: false,
             canGoForward: false,
           }),
+          getTabContent: async (viewId: string) => ({
+            html: '<h1>Mock Content</h1><p>This is mock webpage content for development.</p>',
+            url: 'https://example.com',
+            title: 'Mock Tab',
+          }),
           goBack: async (viewId: string) => {
             console.log('Mock go back:', viewId);
             return true;
@@ -74,6 +80,11 @@ export const useBrowserAPI = (): BrowserAPI | null => {
           title: 'Fallback',
           canGoBack: false,
           canGoForward: false,
+        }),
+        getTabContent: async () => ({
+          html: '<h1>Fallback Content</h1><p>This is fallback webpage content.</p>',
+          url: 'about:blank',
+          title: 'Fallback',
         }),
         goBack: async () => true,
         goForward: async () => true,
