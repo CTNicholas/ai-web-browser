@@ -1,4 +1,4 @@
-@import '@liveblocks/react-ui/styles.css';
+@import "@liveblocks/react-ui/styles.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,4 +12,9 @@ body,
 
 body {
   background: transparent;
+}
+
+.lb-root {
+  font-size: 14px;
+  --lb-accent: rgb(3, 180, 224);
 }

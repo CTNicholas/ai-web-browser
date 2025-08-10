@@ -1,10 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Tab } from './types';
-import { useBrowserAPI } from './hooks/useBrowserAPI';
-import { useWebpageContent } from './hooks/useWebpageContent';
-import TabBar from './components/TabBar';
+import React, { useState, useEffect, useRef } from "react";
+import { Tab } from "./types";
+import { useBrowserAPI } from "./hooks/useBrowserAPI";
+import { useWebpageContent } from "./hooks/useWebpageContent";
+import TabBar from "./components/TabBar";
 // import AddressBar from './components/AddressBar';
-import { LiveblocksProvider, RoomProvider } from '@liveblocks/react';
+import {
+  LiveblocksProvider,
+  RegisterAiKnowledge,
+  RegisterAiTool,
+  RoomProvider,
+} from "@liveblocks/react";
+import { AiChat, AiTool } from "@liveblocks/react-ui";
+import { defineAiTool } from "@liveblocks/client";
 
 function App() {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -21,12 +28,12 @@ function App() {
   // Helper to push current flex content bounds to Electron main
   const sendLayoutBounds = async () => {
     try {
-      if (typeof window === 'undefined' || !window.require) return;
+      if (typeof window === "undefined" || !window.require) return;
       const el = contentRef.current;
       if (!el) return;
       const r = el.getBoundingClientRect();
-      const { ipcRenderer } = window.require('electron');
-      await ipcRenderer.invoke('layout-browserview', {
+      const { ipcRenderer } = window.require("electron");
+      await ipcRenderer.invoke("layout-browserview", {
         x: Math.round(r.left),
         y: Math.round(r.top),
         width: Math.round(r.width),
@@ -40,22 +47,22 @@ function App() {
   // Schedule bounds send on next paint (helps initial mount before layout stabilizes)
   const sendLayoutBoundsOnNextFrame = () => {
     try {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
       requestAnimationFrame(() => requestAnimationFrame(() => void sendLayoutBounds()));
     } catch {}
   };
 
-  const createNewTab = async (url: string = 'about:blank') => {
+  const createNewTab = async (url: string = "about:blank") => {
     if (!browserAPI) return;
 
     try {
       const result = await browserAPI.createTab(url);
       const newTab: Tab = {
         id: result.id,
-        title: url === 'about:blank' ? 'New Tab' : 'Loading...',
+        title: url === "about:blank" ? "New Tab" : "Loading...",
         url: result.url,
         isActive: true,
-        isLoading: url !== 'about:blank',
+        isLoading: url !== "about:blank",
       };
 
       setTabs((prev) => prev.map((t) => ({ ...t, isActive: false })).concat(newTab));
@@ -66,7 +73,7 @@ function App() {
       // Update tab info after a short delay
       setTimeout(() => updateTabInfo(result.id), 1000);
     } catch (error) {
-      console.error('Failed to create tab:', error);
+      console.error("Failed to create tab:", error);
     }
   };
 
@@ -80,7 +87,7 @@ function App() {
       sendLayoutBoundsOnNextFrame();
       await updateTabInfo(tabId);
     } catch (error) {
-      console.error('Failed to switch tab:', error);
+      console.error("Failed to switch tab:", error);
     }
   };
 
@@ -108,7 +115,7 @@ function App() {
         return newTabs;
       });
     } catch (error) {
-      console.error('Failed to close tab:', error);
+      console.error("Failed to close tab:", error);
     }
   };
 
@@ -119,14 +126,14 @@ function App() {
       await browserAPI.navigateTab(activeTabId, url);
       setTabs((prev) =>
         prev.map((tab) =>
-          tab.id === activeTabId ? { ...tab, url, isLoading: true, title: 'Loading...' } : tab,
+          tab.id === activeTabId ? { ...tab, url, isLoading: true, title: "Loading..." } : tab,
         ),
       );
 
       // Update tab info after navigation
       setTimeout(() => updateTabInfo(activeTabId), 1000);
     } catch (error) {
-      console.error('Failed to navigate tab:', error);
+      console.error("Failed to navigate tab:", error);
     }
   };
 
@@ -139,7 +146,7 @@ function App() {
         setTabs((prev) =>
           prev.map((tab) =>
             tab.id === tabId
-              ? { ...tab, url: info.url, title: info.title || 'Untitled', isLoading: false }
+              ? { ...tab, url: info.url, title: info.title || "Untitled", isLoading: false }
               : tab,
           ),
         );
@@ -153,14 +160,14 @@ function App() {
         }));
       }
     } catch (error) {
-      console.error('Failed to get tab info:', error);
+      console.error("Failed to get tab info:", error);
     }
   };
 
   // Create initial tab
   useEffect(() => {
     if (browserAPI && tabs.length === 0) {
-      createNewTab('https://www.google.com');
+      createNewTab("https://www.google.com");
     }
   }, [browserAPI]);
 
@@ -184,7 +191,7 @@ function App() {
       if (!isModKey) return;
 
       switch (e.key) {
-        case 'Tab':
+        case "Tab":
           e.preventDefault();
           if (tabs.length <= 1) return;
 
@@ -203,13 +210,13 @@ function App() {
           switchToTab(tabs[nextIndex].id);
           break;
 
-        case 't':
+        case "t":
           // Ctrl+T - New tab
           e.preventDefault();
           createNewTab();
           break;
 
-        case 'w':
+        case "w":
           // Ctrl+W - Close current tab
           e.preventDefault();
           if (activeTabId && tabs.length > 1) {
@@ -218,15 +225,15 @@ function App() {
           }
           break;
 
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
           // Ctrl+1-9 - Switch to specific tab
           e.preventDefault();
           const tabIndex = parseInt(e.key) - 1;
@@ -237,10 +244,10 @@ function App() {
       }
     };
 
-    window.addEventListener('keydown', handleKeydown);
+    window.addEventListener("keydown", handleKeydown);
 
     return () => {
-      window.removeEventListener('keydown', handleKeydown);
+      window.removeEventListener("keydown", handleKeydown);
     };
   }, [tabs, activeTabId, browserAPI, switchToTab, createNewTab, closeTab]);
 
@@ -248,14 +255,14 @@ function App() {
 
   // Report content area bounds to Electron main so BrowserView fills flex space
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.require) return;
-    const { ipcRenderer } = window.require('electron');
+    if (typeof window === "undefined" || !window.require) return;
+    const { ipcRenderer } = window.require("electron");
 
     const updateBounds = () => {
       const el = contentRef.current;
       if (!el) return;
       const r = el.getBoundingClientRect();
-      ipcRenderer.invoke('layout-browserview', {
+      ipcRenderer.invoke("layout-browserview", {
         x: Math.round(r.left),
         y: Math.round(r.top),
         width: Math.round(r.width),
@@ -265,12 +272,12 @@ function App() {
 
     const ro = new ResizeObserver(() => updateBounds());
     if (contentRef.current) ro.observe(contentRef.current);
-    window.addEventListener('resize', updateBounds);
+    window.addEventListener("resize", updateBounds);
     updateBounds();
 
     return () => {
       ro.disconnect();
-      window.removeEventListener('resize', updateBounds);
+      window.removeEventListener("resize", updateBounds);
     };
   }, []);
 
@@ -288,7 +295,7 @@ function App() {
         <div className="flex h-screen flex-col bg-gray-200/30">
           <div className="p-2 pb-0 pl-[93px]">
             <div className="relative flex h-8 flex-row justify-between">
-              <div className="absolute inset-0" style={{ WebkitAppRegion: 'drag' } as any}></div>
+              <div className="absolute inset-0" style={{ WebkitAppRegion: "drag" } as any}></div>
               {/* <AddressBar
                 activeTab={activeTab}
                 onNavigate={navigateTab}
@@ -329,7 +336,7 @@ function App() {
                 <div ref={contentRef} className="absolute inset-0" />
 
                 {activeTab ? (
-                  activeTab.url === 'about:blank' ? (
+                  activeTab.url === "about:blank" ? (
                     <div className="flex h-full items-center justify-center text-neutral-600">
                       <div className="text-center">
                         <div className="mb-6 text-2xl font-light">New Tab</div>
@@ -339,12 +346,12 @@ function App() {
                             placeholder="Search or enter web address"
                             className="w-96 rounded-lg border border-neutral-300/30 px-4 py-3 text-center focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
+                              if (e.key === "Enter") {
                                 const value = e.currentTarget.value.trim();
                                 if (value) {
                                   const url =
-                                    value.includes('.') && !value.includes(' ')
-                                      ? value.startsWith('http')
+                                    value.includes(".") && !value.includes(" ")
+                                      ? value.startsWith("http")
                                         ? value
                                         : `https://${value}`
                                       : `https://www.google.com/search?q=${encodeURIComponent(value)}`;
@@ -356,28 +363,28 @@ function App() {
                         </div>
                         <div className="grid grid-cols-4 gap-4 text-sm">
                           <button
-                            onClick={() => navigateTab('https://www.google.com')}
+                            onClick={() => navigateTab("https://www.google.com")}
                             className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
                           >
                             <div className="mb-2 text-lg">🔍</div>
                             <div>Google</div>
                           </button>
                           <button
-                            onClick={() => navigateTab('https://www.youtube.com')}
+                            onClick={() => navigateTab("https://www.youtube.com")}
                             className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
                           >
                             <div className="mb-2 text-lg">📺</div>
                             <div>YouTube</div>
                           </button>
                           <button
-                            onClick={() => navigateTab('https://www.github.com')}
+                            onClick={() => navigateTab("https://www.github.com")}
                             className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
                           >
                             <div className="mb-2 text-lg">⚡</div>
                             <div>GitHub</div>
                           </button>
                           <button
-                            onClick={() => navigateTab('https://www.twitter.com')}
+                            onClick={() => navigateTab("https://www.twitter.com")}
                             className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
                           >
                             <div className="mb-2 text-lg">🐦</div>
@@ -412,27 +419,92 @@ function App() {
                 )}
               </div>
             </div>
-            <div className="w-[340px] rounded-[3px] border border-gray-300/80 bg-white shadow-sm">
-              <div className="p-4">
-                <h3 className="mb-2 font-medium text-neutral-700">AI Chat</h3>
-                <div className="text-sm text-neutral-500">AI assistant will appear here</div>
+            <div className="relative w-[340px] overflow-hidden rounded-[3px] border border-gray-300/80 bg-white shadow-sm">
+              <div className="absolute inset-0">
+                <AiChat chatId={activeTabId || "New tab"} layout="compact" />
 
-                {/* Debug: Show webpage content status */}
-                <div className="mt-4 text-xs text-neutral-400">
-                  <div>Content Status: {webpageContent.isLoading ? 'Loading...' : 'Ready'}</div>
-                  {webpageContent.error && (
-                    <div className="text-red-500">Error: {webpageContent.error}</div>
-                  )}
-                  {webpageContent.title && (
-                    <div className="mt-2">
-                      <div className="font-medium">Page: {webpageContent.title}</div>
-                      <div className="mt-1 max-h-32 overflow-y-auto rounded bg-neutral-50 p-2 text-[10px]">
-                        {webpageContent.markdown.substring(0, 300)}
-                        {webpageContent.markdown.length > 300 ? '...' : ''}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <RegisterAiKnowledge
+                  description="The current web page's URL"
+                  value={activeTab?.url || "No webpage open"}
+                />
+
+                <RegisterAiKnowledge
+                  description="The current web page's markdown"
+                  value={
+                    webpageContent.isLoading
+                      ? "Loading..."
+                      : webpageContent.markdown || "The webpage is empty"
+                  }
+                />
+
+                <RegisterAiTool
+                  name="navigate"
+                  tool={defineAiTool()({
+                    description: "Navigate to a URL",
+                    parameters: {
+                      type: "object",
+                      properties: {
+                        url: {
+                          type: "string",
+                          description: "The URL to navigate to (e.g. `https://www.google.com`)",
+                        },
+                        title: {
+                          type: "string",
+                          description: "Where you're going, (e.g. `Google`)",
+                        },
+                      },
+                      required: ["url"],
+                      additionalProperties: false,
+                    },
+                    execute: async ({ url }) => {
+                      navigateTab(url);
+                    },
+                    render: ({ args, stage }) =>
+                      args ? (
+                        <AiTool
+                          icon={<RedirectIcon />}
+                          title={`${stage === "executed" ? "Navigated" : "Navigating"} to ${args.title}`}
+                        />
+                      ) : null,
+                  })}
+                />
+
+                <RegisterAiTool
+                  name="navigate-on-confirm"
+                  tool={defineAiTool()({
+                    description: "ASk the user if they'd like to navigate to a URL",
+                    parameters: {
+                      type: "object",
+                      properties: {
+                        url: {
+                          type: "string",
+                          description: "The URL to navigate to (e.g. `https://www.google.com`)",
+                        },
+                        title: {
+                          type: "string",
+                          description: "Where you're going, (e.g. `Google`)",
+                        },
+                      },
+                      required: ["url", "title"],
+                      additionalProperties: false,
+                    },
+                    render: ({ args, stage }) =>
+                      args ? (
+                        <AiTool
+                          icon={<RedirectIcon />}
+                          title={`${stage === "executed" ? "Navigated" : "Navigating"} to ${args.title}`}
+                        >
+                          <AiTool.Confirmation
+                            confirm={async () => {
+                              navigateTab(args.url);
+                            }}
+                          >
+                            <div className="font-mono text-xs">{args.url}</div>
+                          </AiTool.Confirmation>
+                        </AiTool>
+                      ) : null,
+                  })}
+                />
               </div>
             </div>
           </div>
@@ -442,4 +514,24 @@ function App() {
   );
 }
 
+function RedirectIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className=""
+      {...props}
+    >
+      <path d="M15 10l5 5-5 5" />
+      <path d="M4 4v7a4 4 0 004 4h12" />
+    </svg>
+  );
+}
 export default App;
