@@ -4,6 +4,7 @@ export interface Tab {
   url: string;
   isActive: boolean;
   isLoading?: boolean;
+  favicon?: string;
 }
 
 export interface BrowserAPI {
@@ -16,6 +17,7 @@ export interface BrowserAPI {
     title: string;
     canGoBack: boolean;
     canGoForward: boolean;
+    favicon: string | null;
   } | null>;
   getTabContent: (viewId: string) => Promise<{
     html: string;
@@ -24,6 +26,7 @@ export interface BrowserAPI {
   } | null>;
   goBack: (viewId: string) => Promise<boolean>;
   goForward: (viewId: string) => Promise<boolean>;
+  setTabOpacity: (viewId: string, opacity: number) => Promise<boolean>;
 }
 
 declare global {

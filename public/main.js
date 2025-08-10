@@ -1,10 +1,10 @@
-import { app, BrowserWindow, WebContentsView, ipcMain } from 'electron';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { app, BrowserWindow, WebContentsView, ipcMain, screen } from "electron";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env.NODE_ENV === "development";
 
 let mainWindow;
 let webContentsViews = new Map();
@@ -15,11 +15,11 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    titleBarStyle: 'hiddenInset', // Hide default title bar but keep traffic lights
+    titleBarStyle: "hiddenInset", // Hide default title bar but keep traffic lights
     trafficLightPosition: { x: 20, y: 14 }, // Position the ●●● buttons
-    vibrancy: 'hud', // Add vibrancy effect
-    visualEffectState: 'active', // Ensure vibrancy is applied even when window is active
-    backgroundColor: '#00000000', // Transparent background so frosted areas show vibrancy
+    vibrancy: "hud", // Add vibrancy effect
+    visualEffectState: "active", // Ensure vibrancy is applied even when window is active
+    backgroundColor: "#00000000", // Transparent background so frosted areas show vibrancy
     roundedCorners: true, // Add rounded corners to the main window
     webPreferences: {
       nodeIntegration: true,
@@ -31,11 +31,11 @@ function createWindow() {
 
   const startUrl = isDev
     ? `http://localhost:3000?t=${Date.now()}` // Cache bust with timestamp
-    : `file://${path.join(__dirname, '../build/index.html')}`;
+    : `file://${path.join(__dirname, "../build/index.html")}`;
 
   mainWindow.loadURL(startUrl);
 
-  mainWindow.on('closed', () => {
+  mainWindow.on("closed", () => {
     // Clean up web contents views
     for (const [viewId, webContentsView] of webContentsViews) {
       try {
@@ -56,7 +56,7 @@ function createWindow() {
 }
 
 // IPC handlers for tab management
-ipcMain.handle('create-tab', (event, url = 'https://www.google.com') => {
+ipcMain.handle("create-tab", (event, url = "https://www.google.com") => {
   const viewId = Date.now().toString();
 
   const webContentsView = new WebContentsView({
@@ -68,24 +68,24 @@ ipcMain.handle('create-tab', (event, url = 'https://www.google.com') => {
   });
 
   // Handle new window requests
-  webContentsView.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  webContentsView.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
 
   // Listen for navigation events to notify renderer about content changes
-  webContentsView.webContents.on('did-finish-load', () => {
+  webContentsView.webContents.on("did-finish-load", () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('tab-content-changed', viewId);
+      mainWindow.webContents.send("tab-content-changed", viewId);
     }
   });
 
-  webContentsView.webContents.on('did-navigate', () => {
+  webContentsView.webContents.on("did-navigate", () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('tab-content-changed', viewId);
+      mainWindow.webContents.send("tab-content-changed", viewId);
     }
   });
 
-  webContentsView.webContents.on('did-navigate-in-page', () => {
+  webContentsView.webContents.on("did-navigate-in-page", () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('tab-content-changed', viewId);
+      mainWindow.webContents.send("tab-content-changed", viewId);
     }
   });
 
@@ -100,11 +100,11 @@ ipcMain.handle('create-tab', (event, url = 'https://www.google.com') => {
   return {
     id: viewId,
     url: url,
-    title: 'Loading...',
+    title: "Loading...",
   };
 });
 
-ipcMain.handle('switch-tab', (event, viewId) => {
+ipcMain.handle("switch-tab", (event, viewId) => {
   const webContentsView = webContentsViews.get(viewId);
   if (webContentsView) {
     // Remove currently active view
@@ -125,7 +125,7 @@ ipcMain.handle('switch-tab', (event, viewId) => {
   return false;
 });
 
-ipcMain.handle('close-tab', (event, viewId) => {
+ipcMain.handle("close-tab", (event, viewId) => {
   const webContentsView = webContentsViews.get(viewId);
   if (webContentsView) {
     if (activeViewId === viewId) {
@@ -139,7 +139,7 @@ ipcMain.handle('close-tab', (event, viewId) => {
   return false;
 });
 
-ipcMain.handle('navigate-tab', (event, viewId, url) => {
+ipcMain.handle("navigate-tab", (event, viewId, url) => {
   const webContentsView = webContentsViews.get(viewId);
   if (webContentsView) {
     webContentsView.webContents.loadURL(url);
@@ -148,20 +148,48 @@ ipcMain.handle('navigate-tab', (event, viewId, url) => {
   return false;
 });
 
-ipcMain.handle('get-tab-info', (event, viewId) => {
+ipcMain.handle("get-tab-info", async (event, viewId) => {
   const webContentsView = webContentsViews.get(viewId);
   if (webContentsView) {
+    let favicon = null;
+
+    try {
+      // Try to get favicon by executing JavaScript in the page
+      favicon = await webContentsView.webContents.executeJavaScript(`
+        (() => {
+          // Look for favicon link elements
+          const faviconLink = document.querySelector('link[rel*="icon"]');
+          if (faviconLink && faviconLink.href) {
+            return faviconLink.href;
+          }
+          
+          // Fallback to default favicon.ico
+          const url = new URL(window.location.href);
+          return url.origin + '/favicon.ico';
+        })();
+      `);
+    } catch (error) {
+      // If JavaScript execution fails, try default favicon path
+      try {
+        const url = new URL(webContentsView.webContents.getURL());
+        favicon = url.origin + "/favicon.ico";
+      } catch (urlError) {
+        favicon = null;
+      }
+    }
+
     return {
       url: webContentsView.webContents.getURL(),
       title: webContentsView.webContents.getTitle(),
       canGoBack: webContentsView.webContents.navigationHistory.canGoBack(),
       canGoForward: webContentsView.webContents.navigationHistory.canGoForward(),
+      favicon: favicon,
     };
   }
   return null;
 });
 
-ipcMain.handle('tab-go-back', (event, viewId) => {
+ipcMain.handle("tab-go-back", (event, viewId) => {
   const webContentsView = webContentsViews.get(viewId);
   if (webContentsView && webContentsView.webContents.navigationHistory.canGoBack()) {
     webContentsView.webContents.navigationHistory.goBack();
@@ -170,7 +198,7 @@ ipcMain.handle('tab-go-back', (event, viewId) => {
   return false;
 });
 
-ipcMain.handle('tab-go-forward', (event, viewId) => {
+ipcMain.handle("tab-go-forward", (event, viewId) => {
   const webContentsView = webContentsViews.get(viewId);
   if (webContentsView && webContentsView.webContents.navigationHistory.canGoForward()) {
     webContentsView.webContents.navigationHistory.goForward();
@@ -179,7 +207,7 @@ ipcMain.handle('tab-go-forward', (event, viewId) => {
   return false;
 });
 
-ipcMain.handle('get-tab-content', async (event, viewId) => {
+ipcMain.handle("get-tab-content", async (event, viewId) => {
   const webContentsView = webContentsViews.get(viewId);
   if (webContentsView) {
     try {
@@ -225,14 +253,14 @@ ipcMain.handle('get-tab-content', async (event, viewId) => {
         title: webContentsView.webContents.getTitle(),
       };
     } catch (error) {
-      console.error('Error extracting content:', error);
+      console.error("Error extracting content:", error);
       return null;
     }
   }
   return null;
 });
 
-ipcMain.handle('layout-browserview', (event, bounds) => {
+ipcMain.handle("layout-browserview", (event, bounds) => {
   contentBounds = bounds;
   if (activeViewId) {
     const webContentsView = webContentsViews.get(activeViewId);
@@ -243,15 +271,92 @@ ipcMain.handle('layout-browserview', (event, bounds) => {
   return true;
 });
 
+ipcMain.handle("set-tab-opacity", (event, viewId, opacity) => {
+  const webContentsView = webContentsViews.get(viewId);
+  if (webContentsView) {
+    try {
+      // Set truly transparent background when opacity is 0
+      if (opacity === 0) {
+        webContentsView.setBackgroundColor({
+          red: 0,
+          green: 0,
+          blue: 0,
+          alpha: 0,
+        });
+      } else {
+        webContentsView.setBackgroundColor({
+          red: 255,
+          green: 255,
+          blue: 255,
+          alpha: Math.round(opacity * 255),
+        });
+      }
+
+      // Make the web page itself transparent and handle click-through
+      webContentsView.webContents.insertCSS(`
+        html { 
+          opacity: ${opacity} !important; 
+          ${opacity === 0 ? "pointer-events: none !important;" : ""}
+          ${opacity === 0 ? "background: transparent !important;" : ""}
+        }
+        ${
+          opacity === 0
+            ? `
+          body { 
+            background: transparent !important; 
+          }
+          * { 
+            background-color: transparent !important; 
+          }
+        `
+            : ""
+        }
+      `);
+
+      // Set ignore mouse events for click-through when fully transparent
+      if (opacity === 0) {
+        // Hide the WebContentsView completely to show React element underneath
+        if (activeViewId === viewId) {
+          mainWindow.contentView.removeChildView(webContentsView);
+        }
+        webContentsView.webContents.setIgnoreMenuShortcuts(true);
+      } else {
+        // Restore the WebContentsView
+        if (activeViewId === viewId) {
+          mainWindow.contentView.addChildView(webContentsView);
+          webContentsView.setBounds(contentBounds);
+        }
+        webContentsView.webContents.setIgnoreMenuShortcuts(false);
+
+        // Restore mouse events
+        try {
+          webContentsView.webContents.executeJavaScript(`
+            document.body.style.pointerEvents = 'auto';
+            document.documentElement.style.pointerEvents = 'auto';
+          `);
+        } catch (jsError) {
+          console.log("Could not execute pointer-events script:", jsError);
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error setting tab opacity:", error);
+      return false;
+    }
+  }
+  return false;
+});
+
 app.whenReady().then(createWindow);
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-app.on('activate', () => {
+app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }

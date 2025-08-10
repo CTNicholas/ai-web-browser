@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Tab } from "./types";
 import { useBrowserAPI } from "./hooks/useBrowserAPI";
 import { useWebpageContent } from "./hooks/useWebpageContent";
+import { useOpacityToggle } from "./hooks/useOpacityToggle";
 import TabBar from "./components/TabBar";
 // import AddressBar from './components/AddressBar';
 import {
@@ -22,6 +23,7 @@ function App() {
   }>({});
   const browserAPI = useBrowserAPI();
   const webpageContent = useWebpageContent(activeTabId);
+  const { opacity, toggleOpacity } = useOpacityToggle(1, browserAPI, activeTabId);
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId) || null;
 
@@ -59,7 +61,7 @@ function App() {
       const result = await browserAPI.createTab(url);
       const newTab: Tab = {
         id: result.id,
-        title: url === "about:blank" ? "New Tab" : "Loading...",
+        title: url === "about:blank" ? "New tab" : "Loading...",
         url: result.url,
         isActive: true,
         isLoading: url !== "about:blank",
@@ -68,6 +70,11 @@ function App() {
       setTabs((prev) => prev.map((t) => ({ ...t, isActive: false })).concat(newTab));
       setActiveTabId(result.id);
       await browserAPI.switchTab(result.id);
+
+      // Set opacity based on URL - 0 for about:blank, 1 for real websites
+      const opacity = url === "about:blank" ? 0 : 1;
+      await browserAPI.setTabOpacity(result.id, opacity);
+
       sendLayoutBoundsOnNextFrame();
 
       // Update tab info after a short delay
@@ -84,6 +91,14 @@ function App() {
       await browserAPI.switchTab(tabId);
       setTabs((prev) => prev.map((tab) => ({ ...tab, isActive: tab.id === tabId })));
       setActiveTabId(tabId);
+
+      // Set opacity based on the tab's current URL
+      const tab = tabs.find((t) => t.id === tabId);
+      if (tab) {
+        const opacity = tab.url === "about:blank" ? 0 : 1;
+        await browserAPI.setTabOpacity(tabId, opacity);
+      }
+
       sendLayoutBoundsOnNextFrame();
       await updateTabInfo(tabId);
     } catch (error) {
@@ -107,6 +122,11 @@ function App() {
           nextTab.isActive = true;
           setActiveTabId(nextTab.id);
           browserAPI.switchTab(nextTab.id);
+
+          // Set opacity based on the next tab's URL
+          const opacity = nextTab.url === "about:blank" ? 0 : 1;
+          browserAPI.setTabOpacity(nextTab.id, opacity);
+
           sendLayoutBoundsOnNextFrame();
         } else if (activeTabId === tabId) {
           setActiveTabId(null);
@@ -130,6 +150,10 @@ function App() {
         ),
       );
 
+      // Set opacity based on URL - 0 for about:blank, 1 for real websites
+      const opacity = url === "about:blank" ? 0 : 1;
+      await browserAPI.setTabOpacity(activeTabId, opacity);
+
       // Update tab info after navigation
       setTimeout(() => updateTabInfo(activeTabId), 1000);
     } catch (error) {
@@ -146,7 +170,13 @@ function App() {
         setTabs((prev) =>
           prev.map((tab) =>
             tab.id === tabId
-              ? { ...tab, url: info.url, title: info.title || "Untitled", isLoading: false }
+              ? {
+                  ...tab,
+                  url: info.url,
+                  title: info.url === "about:blank" ? "New tab" : info.title || "Untitled",
+                  isLoading: false,
+                  favicon: info.favicon || "",
+                }
               : tab,
           ),
         );
@@ -225,6 +255,12 @@ function App() {
           }
           break;
 
+        case "o":
+          // Ctrl+O - Toggle opacity
+          e.preventDefault();
+          toggleOpacity();
+          break;
+
         case "1":
         case "2":
         case "3":
@@ -249,7 +285,7 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeydown);
     };
-  }, [tabs, activeTabId, browserAPI, switchToTab, createNewTab, closeTab]);
+  }, [tabs, activeTabId, browserAPI, switchToTab, createNewTab, closeTab, toggleOpacity]);
 
   // const currentNavInfo = activeTabId ? tabNavInfo[activeTabId] : null;
 
@@ -333,7 +369,7 @@ function App() {
             <div className="relative flex-1 rounded-[3px] border border-gray-300/80 shadow-sm">
               <div className="relative h-full w-full overflow-hidden rounded-lg">
                 {/* Measured area for the BrowserView */}
-                <div ref={contentRef} className="absolute inset-0" />
+                <div ref={contentRef} className="pointer-events-none absolute inset-0" />
 
                 {activeTab ? (
                   activeTab.url === "about:blank" ? (
@@ -394,12 +430,18 @@ function App() {
                       </div>
                     </div>
                   ) : (
-                    <div className="pointer-events-none flex h-full items-center justify-center text-neutral-500">
-                      <div className="text-center">
-                        <div className="mb-2 text-lg">{activeTab.title}</div>
-                        <div className="text-sm">{activeTab.url}</div>
-                        <div className="mt-4 text-xs text-neutral-400">
-                          Web content is displayed here via Electron BrowserView
+                    <div className="pointer-events-none flex h-full items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 text-gray-800">
+                      <div className="rounded-lg bg-white/80 p-8 text-center shadow-lg backdrop-blur-sm">
+                        <div className="mb-4 text-2xl">🌐</div>
+                        <div className="mb-2 text-lg font-semibold">{activeTab.title}</div>
+                        <div className="mb-4 break-all text-sm text-gray-600">{activeTab.url}</div>
+                        <div className="text-xs text-gray-500">
+                          React Element Below WebContentsView
+                        </div>
+                        <div className="mt-2 text-xs text-gray-400">
+                          {opacity === 0
+                            ? "👻 Click-through mode active"
+                            : "Web content displayed via Electron BrowserView"}
                         </div>
                       </div>
                     </div>
@@ -438,9 +480,9 @@ function App() {
                 />
 
                 <RegisterAiTool
-                  name="navigate"
+                  name="redirect-user"
                   tool={defineAiTool()({
-                    description: "Navigate to a URL",
+                    description: "Navigate the user to a URL",
                     parameters: {
                       type: "object",
                       properties: {
@@ -453,11 +495,12 @@ function App() {
                           description: "Where you're going, (e.g. `Google`)",
                         },
                       },
-                      required: ["url"],
+                      required: ["url", "title"],
                       additionalProperties: false,
                     },
                     execute: async ({ url }) => {
                       navigateTab(url);
+                      return { data: {}, description: "Navigated to " + url };
                     },
                     render: ({ args, stage }) =>
                       args ? (
@@ -470,9 +513,9 @@ function App() {
                 />
 
                 <RegisterAiTool
-                  name="navigate-on-confirm"
+                  name="redirect-user-on-confirm"
                   tool={defineAiTool()({
-                    description: "ASk the user if they'd like to navigate to a URL",
+                    description: "Ask the user if they'd like to navigate to a URL",
                     parameters: {
                       type: "object",
                       properties: {
@@ -497,6 +540,13 @@ function App() {
                           <AiTool.Confirmation
                             confirm={async () => {
                               navigateTab(args.url);
+                              return { data: {}, description: "Navigated to " + args.url };
+                            }}
+                            cancel={async () => {
+                              return {
+                                data: {},
+                                description: "User cancelled navigating to " + args.url,
+                              };
                             }}
                           >
                             <div className="font-mono text-xs">{args.url}</div>

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { BrowserAPI } from '../types';
+import { useEffect, useState } from "react";
+import { BrowserAPI } from "../types";
 
 export const useBrowserAPI = (): BrowserAPI | null => {
   const [api, setApi] = useState<BrowserAPI | null>(null);
@@ -7,60 +7,67 @@ export const useBrowserAPI = (): BrowserAPI | null => {
   useEffect(() => {
     try {
       // Check if we're in Electron
-      if (typeof window !== 'undefined' && window.require) {
-        const { ipcRenderer } = window.require('electron');
+      if (typeof window !== "undefined" && window.require) {
+        const { ipcRenderer } = window.require("electron");
 
         const browserAPI: BrowserAPI = {
-          createTab: (url?: string) => ipcRenderer.invoke('create-tab', url),
-          switchTab: (viewId: string) => ipcRenderer.invoke('switch-tab', viewId),
-          closeTab: (viewId: string) => ipcRenderer.invoke('close-tab', viewId),
+          createTab: (url?: string) => ipcRenderer.invoke("create-tab", url),
+          switchTab: (viewId: string) => ipcRenderer.invoke("switch-tab", viewId),
+          closeTab: (viewId: string) => ipcRenderer.invoke("close-tab", viewId),
           navigateTab: (viewId: string, url: string) =>
-            ipcRenderer.invoke('navigate-tab', viewId, url),
-          getTabInfo: (viewId: string) => ipcRenderer.invoke('get-tab-info', viewId),
-          getTabContent: (viewId: string) => ipcRenderer.invoke('get-tab-content', viewId),
-          goBack: (viewId: string) => ipcRenderer.invoke('tab-go-back', viewId),
-          goForward: (viewId: string) => ipcRenderer.invoke('tab-go-forward', viewId),
+            ipcRenderer.invoke("navigate-tab", viewId, url),
+          getTabInfo: (viewId: string) => ipcRenderer.invoke("get-tab-info", viewId),
+          getTabContent: (viewId: string) => ipcRenderer.invoke("get-tab-content", viewId),
+          goBack: (viewId: string) => ipcRenderer.invoke("tab-go-back", viewId),
+          goForward: (viewId: string) => ipcRenderer.invoke("tab-go-forward", viewId),
+          setTabOpacity: (viewId: string, opacity: number) =>
+            ipcRenderer.invoke("set-tab-opacity", viewId, opacity),
         };
 
         setApi(browserAPI);
       } else {
         // Mock API for web browser (development)
-        console.log('Running in web browser - using mock browser API');
+        console.log("Running in web browser - using mock browser API");
         const mockAPI: BrowserAPI = {
           createTab: async (url?: string) => ({
             id: `mock-${Date.now()}`,
-            url: url || 'https://google.com',
-            title: 'Mock Tab',
+            url: url || "https://google.com",
+            title: "Mock Tab",
           }),
           switchTab: async (viewId: string) => {
-            console.log('Mock switch to:', viewId);
+            console.log("Mock switch to:", viewId);
             return true;
           },
           closeTab: async (viewId: string) => {
-            console.log('Mock close:', viewId);
+            console.log("Mock close:", viewId);
             return true;
           },
           navigateTab: async (viewId: string, url: string) => {
-            console.log('Mock navigate:', viewId, url);
+            console.log("Mock navigate:", viewId, url);
             return true;
           },
           getTabInfo: async (viewId: string) => ({
-            url: 'https://example.com',
-            title: 'Mock Tab',
+            url: "https://example.com",
+            title: "Mock Tab",
             canGoBack: false,
             canGoForward: false,
+            favicon: null,
           }),
           getTabContent: async (viewId: string) => ({
-            html: '<h1>Mock Content</h1><p>This is mock webpage content for development.</p>',
-            url: 'https://example.com',
-            title: 'Mock Tab',
+            html: "<h1>Mock Content</h1><p>This is mock webpage content for development.</p>",
+            url: "https://example.com",
+            title: "Mock Tab",
           }),
           goBack: async (viewId: string) => {
-            console.log('Mock go back:', viewId);
+            console.log("Mock go back:", viewId);
             return true;
           },
           goForward: async (viewId: string) => {
-            console.log('Mock go forward:', viewId);
+            console.log("Mock go forward:", viewId);
+            return true;
+          },
+          setTabOpacity: async (viewId: string, opacity: number) => {
+            console.log("Mock set tab opacity:", viewId, opacity);
             return true;
           },
         };
@@ -68,26 +75,28 @@ export const useBrowserAPI = (): BrowserAPI | null => {
         setApi(mockAPI);
       }
     } catch (error) {
-      console.error('Failed to initialize browser API:', error);
+      console.error("Failed to initialize browser API:", error);
       // Set a mock API even if there's an error
       const fallbackAPI: BrowserAPI = {
-        createTab: async () => ({ id: 'fallback', url: 'about:blank', title: 'Fallback Tab' }),
+        createTab: async () => ({ id: "fallback", url: "about:blank", title: "Fallback Tab" }),
         switchTab: async () => true,
         closeTab: async () => true,
         navigateTab: async () => true,
         getTabInfo: async () => ({
-          url: 'about:blank',
-          title: 'Fallback',
+          url: "about:blank",
+          title: "Fallback",
           canGoBack: false,
           canGoForward: false,
+          favicon: null,
         }),
         getTabContent: async () => ({
-          html: '<h1>Fallback Content</h1><p>This is fallback webpage content.</p>',
-          url: 'about:blank',
-          title: 'Fallback',
+          html: "<h1>Fallback Content</h1><p>This is fallback webpage content.</p>",
+          url: "about:blank",
+          title: "Fallback",
         }),
         goBack: async () => true,
         goForward: async () => true,
+        setTabOpacity: async () => true,
       };
       setApi(fallbackAPI);
     }
