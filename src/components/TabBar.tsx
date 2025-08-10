@@ -23,17 +23,17 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
         transition={{ type: "spring", stiffness: 800, damping: 40 }}
       >
         <AnimatePresence mode="popLayout">
-          {tabs.map((tab) => (
+          {tabs.map((tab, index) => (
             <motion.div
               key={tab.id}
               layout
-              initial={{ width: 80, opacity: 0.4 }}
-              animate={{ width: 180, opacity: 1 }}
-              exit={{ width: 0, opacity: 0, scale: 0.8, filter: "blur(4px)" }}
+              initial={{ width: 32, opacity: 0.4, filter: "blur(2px)" }}
+              animate={{ width: 180, opacity: 1, filter: "blur(0px)" }}
+              exit={{ width: 0, opacity: 0, scale: 0.8, filter: "blur(2px)" }}
               transition={{
                 layout: { type: "spring", stiffness: 800, damping: 60 },
                 width: { type: "spring", stiffness: 550, damping: 45 },
-                opacity: { duration: 0.1 },
+                opacity: { duration: 0.3 },
                 scale: { duration: 0.1 },
                 filter: { duration: 0.1 },
               }}
@@ -85,7 +85,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
 
               <button
                 onClick={(e) => onTabClose(tab.id, e)}
-                className="absolute right-2 flex-shrink-0 rounded p-1 text-neutral-600 opacity-0 hover:bg-white/50 hover:text-neutral-800 group-hover:opacity-100"
+                className="absolute right-2 flex-shrink-0 rounded p-1 text-gray-600 opacity-0 hover:bg-white/50 hover:text-neutral-800 group-hover:opacity-100"
                 title="Close tab"
               >
                 <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,19 +113,30 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
                   </svg>
                 </>
               ) : null}
+              {index === tabs.length - 1 && (
+                <motion.button
+                  layout
+                  transition={{
+                    layout: { type: "spring", stiffness: 1000, damping: 60 },
+                  }}
+                  onClick={onNewTab}
+                  className="absolute left-full ml-1 flex aspect-square h-full items-center justify-center rounded-t hover:bg-white/40 focus:outline-none"
+                  style={{ WebkitAppRegion: "no-drag" } as any}
+                  title="New tab"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </motion.button>
+              )}
             </motion.div>
           ))}
         </AnimatePresence>
-        <button
-          onClick={onNewTab}
-          className="flex aspect-square h-full items-center justify-center rounded-t hover:bg-white/40 focus:outline-none"
-          style={{ WebkitAppRegion: "no-drag" } as any}
-          title="New tab"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
       </motion.div>
     </div>
   );

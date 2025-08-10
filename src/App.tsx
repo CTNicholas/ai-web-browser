@@ -4,15 +4,10 @@ import { useBrowserAPI } from "./hooks/useBrowserAPI";
 import { useWebpageContent } from "./hooks/useWebpageContent";
 import { useOpacityToggle } from "./hooks/useOpacityToggle";
 import TabBar from "./components/TabBar";
+import NewTabPage from "./components/NewTabPage";
+import AiChatPanel from "./components/AiChatPanel";
 // import AddressBar from './components/AddressBar';
-import {
-  LiveblocksProvider,
-  RegisterAiKnowledge,
-  RegisterAiTool,
-  RoomProvider,
-} from "@liveblocks/react";
-import { AiChat, AiTool } from "@liveblocks/react-ui";
-import { defineAiTool } from "@liveblocks/client";
+import { LiveblocksProvider, RoomProvider } from "@liveblocks/react";
 
 function App() {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -300,7 +295,7 @@ function App() {
     const updateBounds = () => {
       const el = contentRef.current;
       if (!el) return;
-      
+
       const r = el.getBoundingClientRect();
       const bounds = {
         x: Math.round(r.left),
@@ -310,15 +305,17 @@ function App() {
       };
 
       // Only skip if bounds are exactly the same (let Electron handle micro-changes)
-      if (bounds.x === lastBounds.x && 
-          bounds.y === lastBounds.y && 
-          bounds.width === lastBounds.width && 
-          bounds.height === lastBounds.height) {
+      if (
+        bounds.x === lastBounds.x &&
+        bounds.y === lastBounds.y &&
+        bounds.width === lastBounds.width &&
+        bounds.height === lastBounds.height
+      ) {
         return;
       }
 
       lastBounds = { ...bounds };
-      
+
       // Fire-and-forget for maximum performance - don't await
       ipcRenderer.invoke("layout-browserview", bounds);
     };
@@ -331,7 +328,7 @@ function App() {
     const ro = new ResizeObserver(scheduleUpdate);
     if (contentRef.current) ro.observe(contentRef.current);
     window.addEventListener("resize", scheduleUpdate);
-    
+
     // Initial update
     scheduleUpdate();
 
@@ -398,78 +395,9 @@ function App() {
 
                 {activeTab ? (
                   activeTab.url === "about:blank" ? (
-                    <div className="flex h-full items-center justify-center text-neutral-600">
-                      <div className="text-center">
-                        <div className="mb-6 text-2xl font-light">New Tab</div>
-                        <div className="mb-8">
-                          <input
-                            type="text"
-                            placeholder="Search or enter web address"
-                            className="w-96 rounded-lg border border-neutral-300/30 px-4 py-3 text-center focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                const value = e.currentTarget.value.trim();
-                                if (value) {
-                                  const url =
-                                    value.includes(".") && !value.includes(" ")
-                                      ? value.startsWith("http")
-                                        ? value
-                                        : `https://${value}`
-                                      : `https://www.google.com/search?q=${encodeURIComponent(value)}`;
-                                  navigateTab(url);
-                                }
-                              }
-                            }}
-                          />
-                        </div>
-                        <div className="grid grid-cols-4 gap-4 text-sm">
-                          <button
-                            onClick={() => navigateTab("https://www.google.com")}
-                            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
-                          >
-                            <div className="mb-2 text-lg">🔍</div>
-                            <div>Google</div>
-                          </button>
-                          <button
-                            onClick={() => navigateTab("https://www.youtube.com")}
-                            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
-                          >
-                            <div className="mb-2 text-lg">📺</div>
-                            <div>YouTube</div>
-                          </button>
-                          <button
-                            onClick={() => navigateTab("https://www.github.com")}
-                            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
-                          >
-                            <div className="mb-2 text-lg">⚡</div>
-                            <div>GitHub</div>
-                          </button>
-                          <button
-                            onClick={() => navigateTab("https://www.twitter.com")}
-                            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
-                          >
-                            <div className="mb-2 text-lg">🐦</div>
-                            <div>Twitter</div>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                    <NewTabPage onNavigate={navigateTab} />
                   ) : (
-                    <div className="pointer-events-none flex h-full items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 text-gray-800">
-                      <div className="rounded-lg bg-white/80 p-8 text-center shadow-lg backdrop-blur-sm">
-                        <div className="mb-4 text-2xl">🌐</div>
-                        <div className="mb-2 text-lg font-semibold">{activeTab.title}</div>
-                        <div className="mb-4 break-all text-sm text-gray-600">{activeTab.url}</div>
-                        <div className="text-xs text-gray-500">
-                          React Element Below WebContentsView
-                        </div>
-                        <div className="mt-2 text-xs text-gray-400">
-                          {opacity === 0
-                            ? "👻 Click-through mode active"
-                            : "Web content displayed via Electron BrowserView"}
-                        </div>
-                      </div>
-                    </div>
+                    <div className="h-full w-full bg-white">{/* Displays under webpages */}</div>
                   )
                 ) : (
                   <div className="flex h-full items-center justify-center text-neutral-500">
@@ -486,102 +414,17 @@ function App() {
                 )}
               </div>
             </div>
-            <div className="relative w-[340px] overflow-hidden rounded-[3px] border border-gray-300/80 bg-white shadow-sm">
-              <div className="absolute inset-0">
-                <AiChat chatId={activeTabId || "New tab"} layout="compact" />
-
-                <RegisterAiKnowledge
-                  description="The current web page's URL"
-                  value={activeTab?.url || "No webpage open"}
-                />
-
-                <RegisterAiKnowledge
-                  description="The current web page's markdown"
-                  value={
-                    webpageContent.isLoading
-                      ? "Loading..."
-                      : webpageContent.markdown || "The webpage is empty"
-                  }
-                />
-
-                <RegisterAiTool
-                  name="redirect-user"
-                  tool={defineAiTool()({
-                    description: "Navigate the user to a URL",
-                    parameters: {
-                      type: "object",
-                      properties: {
-                        url: {
-                          type: "string",
-                          description: "The URL to navigate to (e.g. `https://www.google.com`)",
-                        },
-                        title: {
-                          type: "string",
-                          description: "Where you're going, (e.g. `Google`)",
-                        },
-                      },
-                      required: ["url", "title"],
-                      additionalProperties: false,
-                    },
-                    execute: async ({ url }) => {
-                      navigateTab(url);
-                      return { data: {}, description: "Navigated to " + url };
-                    },
-                    render: ({ args, stage }) =>
-                      args ? (
-                        <AiTool
-                          icon={<RedirectIcon />}
-                          title={`${stage === "executed" ? "Navigated" : "Navigating"} to ${args.title}`}
-                        />
-                      ) : null,
-                  })}
-                />
-
-                <RegisterAiTool
-                  name="redirect-user-on-confirm"
-                  tool={defineAiTool()({
-                    description: "Ask the user if they'd like to navigate to a URL",
-                    parameters: {
-                      type: "object",
-                      properties: {
-                        url: {
-                          type: "string",
-                          description: "The URL to navigate to (e.g. `https://www.google.com`)",
-                        },
-                        title: {
-                          type: "string",
-                          description: "Where you're going, (e.g. `Google`)",
-                        },
-                      },
-                      required: ["url", "title"],
-                      additionalProperties: false,
-                    },
-                    render: ({ args, stage }) =>
-                      args ? (
-                        <AiTool
-                          icon={<RedirectIcon />}
-                          title={`${stage === "executed" ? "Navigated" : "Navigating"} to ${args.title}`}
-                        >
-                          <AiTool.Confirmation
-                            confirm={async () => {
-                              navigateTab(args.url);
-                              return { data: {}, description: "Navigated to " + args.url };
-                            }}
-                            cancel={async () => {
-                              return {
-                                data: {},
-                                description: "User cancelled navigating to " + args.url,
-                              };
-                            }}
-                          >
-                            <div className="font-mono text-xs">{args.url}</div>
-                          </AiTool.Confirmation>
-                        </AiTool>
-                      ) : null,
-                  })}
+            {/* Only show AI chat when not on about:blank (new tab page) */}
+            {activeTab && activeTab.url !== "about:blank" && (
+              <div className="relative w-[340px] overflow-hidden rounded-[3px] border border-gray-300/80 bg-white shadow-sm">
+                <AiChatPanel
+                  activeTabId={activeTabId || "New tab"}
+                  activeTabUrl={activeTab?.url}
+                  webpageContent={webpageContent}
+                  onNavigate={navigateTab}
                 />
               </div>
-            </div>
+            )}
           </div>
         </div>
       </RoomProvider>
@@ -589,24 +432,4 @@ function App() {
   );
 }
 
-function RedirectIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={16}
-      height={16}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className=""
-      {...props}
-    >
-      <path d="M15 10l5 5-5 5" />
-      <path d="M4 4v7a4 4 0 004 4h12" />
-    </svg>
-  );
-}
 export default App;
