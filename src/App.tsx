@@ -430,6 +430,7 @@ function App() {
                   activeTabUrl={activeTab?.url}
                   webpageContent={webpageContent}
                   onNavigate={navigateTab}
+                  onCreateNewTab={createNewTab}
                 />
               </div>
             )}

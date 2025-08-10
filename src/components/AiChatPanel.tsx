@@ -12,6 +12,7 @@ interface AiChatPanelProps {
     markdown: string | null;
   };
   onNavigate: (url: string) => void;
+  onCreateNewTab?: (url: string) => void;
 }
 
 const AiChatPanel: React.FC<AiChatPanelProps> = ({
@@ -19,6 +20,7 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({
   activeTabUrl,
   webpageContent,
   onNavigate,
+  onCreateNewTab,
 }) => {
   return (
     <div className="absolute inset-0">
@@ -111,6 +113,67 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({
                   <div className="font-mono text-xs">{args.url}</div>
                 </AiTool.Confirmation>
               </AiTool>
+            ) : null,
+        })}
+      />
+
+      <RegisterAiTool
+        name="open-new-tab"
+        tool={defineAiTool()({
+          description: "Open a new tab and navigate to a specific URL",
+          parameters: {
+            type: "object",
+            properties: {
+              url: {
+                type: "string",
+                description: "The URL to open in a new tab (e.g. 'https://example.com')",
+              },
+              title: {
+                type: "string",
+                description: "A description of where you're opening (e.g. 'Google Search')",
+              },
+            },
+            required: ["url", "title"],
+            additionalProperties: false,
+          },
+          execute: async ({ url, title }) => {
+            try {
+              // Validate and normalize URL
+              let normalizedUrl = url.trim();
+              if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
+                normalizedUrl = "https://" + normalizedUrl;
+              }
+
+              // Create new tab with the URL
+              if (onCreateNewTab) {
+                await onCreateNewTab(normalizedUrl);
+              } else {
+                // Fallback - navigate current tab
+                onNavigate(normalizedUrl);
+              }
+
+              return {
+                data: {
+                  url: normalizedUrl,
+                  title: title,
+                },
+                description: `Opened new tab for ${title} at ${normalizedUrl}`,
+              };
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error ? error.message : "Unknown error occurred";
+              return {
+                data: { error: errorMessage },
+                description: `Failed to open new tab: ${errorMessage}`,
+              };
+            }
+          },
+          render: ({ args, stage }) =>
+            args ? (
+              <AiTool
+                icon={<NewTabIcon />}
+                title={`${stage === "executed" ? "Opened" : "Opening"} new tab for ${args.title}`}
+              />
             ) : null,
         })}
       />
@@ -251,6 +314,26 @@ function RedirectIcon(props: React.SVGProps<SVGSVGElement>) {
     >
       <path d="M15 10l5 5-5 5" />
       <path d="M4 4v7a4 4 0 004 4h12" />
+    </svg>
+  );
+}
+
+function NewTabIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={17}
+      height={17}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="lucide lucide-plus-icon lucide-plus"
+      {...props}
+    >
+      <path d="M5 12h14M12 5v14" />
     </svg>
   );
 }
