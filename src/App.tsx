@@ -173,6 +173,75 @@ function App() {
     return () => clearInterval(interval);
   }, [activeTabId, browserAPI]);
 
+  // Keyboard navigation controls
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      // Check for Ctrl (Windows/Linux) or Cmd (Mac)
+      const isModKey = e.ctrlKey || e.metaKey;
+
+      if (!isModKey) return;
+
+      switch (e.key) {
+        case 'Tab':
+          e.preventDefault();
+          if (tabs.length <= 1) return;
+
+          const currentIndex = tabs.findIndex((tab) => tab.id === activeTabId);
+          if (currentIndex === -1) return;
+
+          let nextIndex;
+          if (e.shiftKey) {
+            // Ctrl+Shift+Tab - Previous tab
+            nextIndex = currentIndex === 0 ? tabs.length - 1 : currentIndex - 1;
+          } else {
+            // Ctrl+Tab - Next tab
+            nextIndex = currentIndex === tabs.length - 1 ? 0 : currentIndex + 1;
+          }
+
+          switchToTab(tabs[nextIndex].id);
+          break;
+
+        case 't':
+          // Ctrl+T - New tab
+          e.preventDefault();
+          createNewTab();
+          break;
+
+        case 'w':
+          // Ctrl+W - Close current tab
+          e.preventDefault();
+          if (activeTabId && tabs.length > 1) {
+            const syntheticEvent = { stopPropagation: () => {} } as React.MouseEvent;
+            closeTab(activeTabId, syntheticEvent);
+          }
+          break;
+
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+          // Ctrl+1-9 - Switch to specific tab
+          e.preventDefault();
+          const tabIndex = parseInt(e.key) - 1;
+          if (tabIndex < tabs.length) {
+            switchToTab(tabs[tabIndex].id);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeydown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  }, [tabs, activeTabId, browserAPI, switchToTab, createNewTab, closeTab]);
+
   // const currentNavInfo = activeTabId ? tabNavInfo[activeTabId] : null;
 
   // Report content area bounds to Electron main so BrowserView fills flex space

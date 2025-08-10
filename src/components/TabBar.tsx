@@ -17,19 +17,24 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
   return (
     <div className="z-10 flex h-full grow items-center">
       {/* Spacer for macOS traffic lights (●●●) */}
-      <div className="flex h-full flex-1 gap-1 overflow-x-auto">
+      <motion.div
+        className="flex h-full flex-1 gap-1 overflow-x-auto"
+        layout
+        transition={{ type: 'spring', stiffness: 800, damping: 40 }}
+      >
         <AnimatePresence mode="popLayout">
           {tabs.map((tab) => (
             <motion.div
               key={tab.id}
+              layout
               initial={{ width: 32, opacity: 0.4 }}
               animate={{ width: 180, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
+              exit={{ width: 0, opacity: 0, scale: 0.8 }}
               transition={{
-                type: 'spring',
-                stiffness: 500,
-                damping: 45,
-                duration: 0.2,
+                layout: { type: 'spring', stiffness: 800, damping: 60 },
+                width: { type: 'spring', stiffness: 600, damping: 45 },
+                opacity: { duration: 0.1 },
+                scale: { duration: 0.1 },
               }}
               style={{ originX: 0, WebkitAppRegion: 'no-drag', overflow: 'hidden' } as any}
               className={`group relative flex h-full cursor-pointer items-center rounded-[5px] rounded-b-none ${
@@ -83,7 +88,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 };
