@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import TurndownService from 'turndown';
-import { useBrowserAPI } from './useBrowserAPI';
+import { useState, useEffect, useCallback } from "react";
+import { useBrowserAPI } from "./useBrowserAPI";
+import { turndownService } from "../utils/turndownService";
 
 interface WebpageContent {
   markdown: string;
@@ -11,38 +11,12 @@ interface WebpageContent {
   error: string | null;
 }
 
-const turndownService = new TurndownService({
-  headingStyle: 'atx',
-  hr: '---',
-  bulletListMarker: '-',
-  codeBlockStyle: 'fenced',
-  fence: '```',
-  emDelimiter: '*',
-  strongDelimiter: '**',
-  linkStyle: 'inlined',
-  linkReferenceStyle: 'full',
-});
-
-// Configure turndown to handle common webpage elements better
-turndownService.addRule('strikethrough', {
-  filter: ['del', 's'],
-  replacement: (content) => `~~${content}~~`,
-});
-
-turndownService.addRule('highlight', {
-  filter: ['mark'],
-  replacement: (content) => `==${content}==`,
-});
-
-// Remove unwanted elements
-turndownService.remove(['script', 'style', 'noscript', 'iframe', 'object', 'embed']);
-
 export const useWebpageContent = (activeTabId: string | null): WebpageContent => {
   const [content, setContent] = useState<WebpageContent>({
-    markdown: '',
-    html: '',
-    url: '',
-    title: '',
+    markdown: "",
+    html: "",
+    url: "",
+    title: "",
     isLoading: false,
     error: null,
   });
@@ -53,10 +27,10 @@ export const useWebpageContent = (activeTabId: string | null): WebpageContent =>
     if (!browserAPI || !activeTabId) {
       setContent((prev) => ({
         ...prev,
-        markdown: '',
-        html: '',
-        url: '',
-        title: '',
+        markdown: "",
+        html: "",
+        url: "",
+        title: "",
         isLoading: false,
         error: null,
       }));
@@ -72,7 +46,7 @@ export const useWebpageContent = (activeTabId: string | null): WebpageContent =>
         const markdown = turndownService.turndown(contentData.html);
 
         setContent({
-          markdown: markdown || 'No content available',
+          markdown: markdown || "No content available",
           html: contentData.html,
           url: contentData.url,
           title: contentData.title,
@@ -82,18 +56,18 @@ export const useWebpageContent = (activeTabId: string | null): WebpageContent =>
       } else {
         setContent((prev) => ({
           ...prev,
-          markdown: '',
-          html: '',
+          markdown: "",
+          html: "",
           isLoading: false,
-          error: contentData ? 'No content found on page' : 'Failed to fetch content',
+          error: contentData ? "No content found on page" : "Failed to fetch content",
         }));
       }
     } catch (error) {
-      console.warn('Error fetching webpage content:', error);
+      console.warn("Error fetching webpage content:", error);
       setContent((prev) => ({
         ...prev,
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       }));
     }
   }, [browserAPI, activeTabId]);
@@ -105,12 +79,12 @@ export const useWebpageContent = (activeTabId: string | null): WebpageContent =>
 
   // Listen for content change events from Electron main process
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.require || !activeTabId) return;
+    if (typeof window === "undefined" || !window.require || !activeTabId) return;
 
     try {
-      const { ipcRenderer } = window.require('electron');
+      const { ipcRenderer } = window.require("electron");
 
-      const handleContentChanged = (event: any, tabId: string) => {
+      const handleContentChanged = (_event: any, tabId: string) => {
         if (tabId === activeTabId) {
           // Small delay to ensure content is fully loaded
           setTimeout(() => {
@@ -119,13 +93,13 @@ export const useWebpageContent = (activeTabId: string | null): WebpageContent =>
         }
       };
 
-      ipcRenderer.on('tab-content-changed', handleContentChanged);
+      ipcRenderer.on("tab-content-changed", handleContentChanged);
 
       return () => {
-        ipcRenderer.removeListener('tab-content-changed', handleContentChanged);
+        ipcRenderer.removeListener("tab-content-changed", handleContentChanged);
       };
     } catch (error) {
-      console.warn('Could not set up IPC listener:', error);
+      console.warn("Could not set up IPC listener:", error);
 
       // Fallback to polling if IPC is not available
       const interval = setInterval(() => {

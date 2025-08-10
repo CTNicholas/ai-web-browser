@@ -2,6 +2,7 @@ import React from "react";
 import { AiChat, AiTool } from "@liveblocks/react-ui";
 import { RegisterAiKnowledge, RegisterAiTool } from "@liveblocks/react";
 import { defineAiTool } from "@liveblocks/client";
+import { turndownService } from "../utils/turndownService";
 
 interface AiChatPanelProps {
   activeTabId: string;
@@ -113,6 +114,122 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({
             ) : null,
         })}
       />
+
+      <RegisterAiTool
+        name="fetch-webpage-as-markdown"
+        tool={defineAiTool()({
+          description: "Fetch any webpage and convert it to markdown format",
+          parameters: {
+            type: "object",
+            properties: {
+              url: {
+                type: "string",
+                description:
+                  "The URL of the webpage to fetch and convert to markdown (e.g. 'https://example.com')",
+              },
+            },
+            required: ["url"],
+            additionalProperties: false,
+          },
+          execute: async ({ url }) => {
+            try {
+              // Validate and normalize URL
+              let normalizedUrl = url.trim();
+              if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
+                normalizedUrl = "https://" + normalizedUrl;
+              }
+
+              // Fetch the webpage directly
+              const response = await fetch(normalizedUrl, {
+                mode: "cors",
+                headers: {
+                  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                  "User-Agent": "Mozilla/5.0 (compatible; AI Web Browser)",
+                },
+              });
+
+              if (!response.ok) {
+                throw new Error(
+                  `Failed to fetch webpage: ${response.status} ${response.statusText}`,
+                );
+              }
+
+              const html = await response.text();
+
+              if (!html) {
+                throw new Error("No HTML content received from webpage");
+              }
+
+              // Extract title from HTML
+              const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+              const title = titleMatch ? titleMatch[1].trim() : "Untitled";
+
+              // Convert HTML to markdown
+              const markdown = turndownService.turndown(html);
+
+              return {
+                data: {
+                  url: normalizedUrl,
+                  title: title,
+                  markdown: markdown,
+                  wordCount: markdown.split(/\s+/).length,
+                },
+                description: `Successfully fetched and converted "${title}" to markdown (${markdown.split(/\s+/).length} words)`,
+              };
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error ? error.message : "Unknown error occurred";
+              return {
+                data: { error: errorMessage },
+                description: `Failed to fetch webpage: ${errorMessage}`,
+              };
+            }
+          },
+          render: ({ args, result, stage }) => {
+            if (!args) return null;
+
+            return (
+              <AiTool
+                icon={<MarkdownIcon />}
+                collapsed={true}
+                title={
+                  stage === "executed"
+                    ? result?.data?.error
+                      ? `Failed to fetch ${args.url}`
+                      : `Fetched "${result?.data?.title || args.url}" as markdown`
+                    : `Fetching ${args.url}`
+                }
+              >
+                {/* {result?.data &&
+                  typeof result.data === "object" &&
+                  "markdown" in result.data &&
+                  result.data.markdown && (
+                    <div className="mt-2 max-h-96 overflow-y-auto rounded border bg-gray-50 p-3">
+                      <div className="mb-2 text-xs text-gray-600">
+                        {(result.data as any).wordCount} words • {(result.data as any).url}
+                      </div>
+                      <pre className="whitespace-pre-wrap font-mono text-sm">
+                        {typeof (result.data as any).markdown === "string" &&
+                        (result.data as any).markdown.length > 2000
+                          ? (result.data as any).markdown.substring(0, 2000) +
+                            "\n\n... (content truncated for display)"
+                          : (result.data as any).markdown}
+                      </pre>
+                    </div>
+                  )}
+                {result?.data &&
+                  typeof result.data === "object" &&
+                  "error" in result.data &&
+                  result.data.error && (
+                    <div className="mt-2 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                      Error: {(result.data as any).error}
+                    </div>
+                  )} */}
+              </AiTool>
+            );
+          },
+        })}
+      />
     </div>
   );
 };
@@ -134,6 +251,29 @@ function RedirectIcon(props: React.SVGProps<SVGSVGElement>) {
     >
       <path d="M15 10l5 5-5 5" />
       <path d="M4 4v7a4 4 0 004 4h12" />
+    </svg>
+  );
+}
+
+function MarkdownIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+      <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+      <path d="M9 9l1 0" />
+      <path d="M9 13l6 0" />
+      <path d="M9 17l6 0" />
     </svg>
   );
 }
