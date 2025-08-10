@@ -24,6 +24,7 @@ export interface BrowserAPI {
   } | null>;
   goBack: (viewId: string) => Promise<boolean>;
   goForward: (viewId: string) => Promise<boolean>;
+  setTabOpacity: (viewId: string, opacity: number) => Promise<boolean>;
 }
 
 declare global {
