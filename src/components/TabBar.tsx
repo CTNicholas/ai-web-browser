@@ -18,7 +18,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
     <div className="z-10 flex h-full grow items-center">
       {/* Spacer for macOS traffic lights (●●●) */}
       <motion.div
-        className="flex h-full flex-1 gap-1 overflow-x-auto"
+        className="flex h-full flex-1 gap-1"
         layout
         transition={{ type: 'spring', stiffness: 800, damping: 40 }}
       >
@@ -37,7 +37,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
                 scale: { duration: 0.1 },
                 filter: { duration: 0.1 },
               }}
-              style={{ originX: 0, WebkitAppRegion: 'no-drag', overflow: 'hidden' } as any}
+              style={{ originX: 0, WebkitAppRegion: 'no-drag' } as any}
               className={`group relative flex h-full cursor-pointer items-center rounded-[5px] rounded-b-none ${
                 tab.isActive
                   ? 'bg-gradient-to-b from-white/80 to-white/70'
@@ -76,6 +76,22 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
                   />
                 </svg>
               </button>
+              {tab.isActive ? (
+                <>
+                  <svg
+                    className="absolute bottom-0 right-full h-[5px] w-[5px] fill-white/70"
+                    viewBox="0 0 50 50"
+                  >
+                    <path d="M 0,50 A 50,50 0 0,0 50,0 L 50,50 Z" fill="" />
+                  </svg>
+                  <svg
+                    className="absolute bottom-0 left-full h-[5px] w-[5px] scale-x-[-1] fill-white/70"
+                    viewBox="0 0 50 50"
+                  >
+                    <path d="M 0,50 A 50,50 0 0,0 50,0 L 50,50 Z" fill="" />
+                  </svg>
+                </>
+              ) : null}
             </motion.div>
           ))}
         </AnimatePresence>
