@@ -62,9 +62,17 @@ function App() {
         isLoading: url !== "about:blank",
       };
 
-      setTabs((prev) => prev.map((t) => ({ ...t, isActive: false })).concat(newTab));
-      setActiveTabId(result.id);
+      // First switch to the new tab at the browser level
       await browserAPI.switchTab(result.id);
+
+      // Update tabs state and ensure new tab is added at the end
+      setTabs((prev) => {
+        const updatedTabs = prev.map((t) => ({ ...t, isActive: false }));
+        return [...updatedTabs, newTab];
+      });
+
+      // Set active tab ID after browser switch
+      setActiveTabId(result.id);
 
       // Set opacity based on URL - 0 for about:blank, 1 for real websites
       const opacity = url === "about:blank" ? 0 : 1;

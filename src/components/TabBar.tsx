@@ -38,65 +38,70 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
                 filter: { duration: 0.1 },
               }}
               style={{ originX: 0, WebkitAppRegion: "no-drag" } as any}
-              className={`group relative flex h-full cursor-pointer items-center rounded-[5px] rounded-b-none ${
-                tab.isActive
-                  ? "bg-gradient-to-b from-white/80 to-white/70"
-                  : "bg-white/0 hover:bg-white/40"
-              } `}
-              onClick={() => onTabClick(tab.id)}
-              onMouseDown={(e) => {
-                // Middle-click closes tab
-                if (e.button === 1) {
-                  onTabClose(tab.id, e);
-                }
-              }}
+              className="relative flex h-full"
             >
-              <div className="flex min-w-0 items-center px-2" style={{ width: 180 }}>
-                {tab.isLoading ? (
-                  <div className="mr-2 h-4 w-4 flex-shrink-0 animate-spin rounded-full border-[2px] border-neutral-500 border-t-transparent" />
-                ) : tab.favicon ? (
-                  <>
-                    <img
-                      src={tab.favicon}
-                      alt="favicon"
-                      className="mr-2 h-4 w-4 flex-shrink-0 rounded-sm"
-                      onError={(e) => {
-                        // Fallback to default icon if favicon fails to load
-                        e.currentTarget.style.display = "none";
-                        const fallbackIcon = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (fallbackIcon) {
-                          fallbackIcon.style.display = "block";
-                        }
-                      }}
+              <div
+                className={`group flex h-full w-full cursor-pointer items-center rounded-[5px] rounded-b-none ${
+                  tab.isActive
+                    ? "bg-gradient-to-b from-white/80 to-white/70"
+                    : "bg-white/0 hover:bg-white/40"
+                }`}
+                onClick={() => onTabClick(tab.id)}
+                onMouseDown={(e) => {
+                  // Middle-click closes tab
+                  if (e.button === 1) {
+                    onTabClose(tab.id, e);
+                  }
+                }}
+              >
+                <div className="flex min-w-0 items-center px-2" style={{ width: 180 }}>
+                  {tab.isLoading ? (
+                    <div className="mr-2 h-4 w-4 flex-shrink-0 animate-spin rounded-full border-[2px] border-neutral-500 border-t-transparent" />
+                  ) : tab.favicon ? (
+                    <>
+                      <img
+                        src={tab.favicon}
+                        alt="favicon"
+                        className="mr-2 h-4 w-4 flex-shrink-0 rounded-sm"
+                        onError={(e) => {
+                          // Fallback to default icon if favicon fails to load
+                          e.currentTarget.style.display = "none";
+                          const fallbackIcon = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (fallbackIcon) {
+                            fallbackIcon.style.display = "block";
+                          }
+                        }}
+                      />
+                      {/* Fallback icon (hidden by default, shown when favicon fails) */}
+                      <div
+                        className="mr-2 h-4 w-4 flex-shrink-0 rounded-full bg-neutral-200/80"
+                        style={{ display: "none" }}
+                      />
+                    </>
+                  ) : (
+                    <div className="mr-2 h-4 w-4 flex-shrink-0 rounded-full bg-neutral-200/80" />
+                  )}
+                  <span className="flex-1 truncate text-xs">
+                    {truncateTitle(tab.title || "New Tab")}
+                  </span>
+                </div>
+
+                <button
+                  onClick={(e) => onTabClose(tab.id, e)}
+                  className="absolute right-2 flex-shrink-0 rounded-full p-1 text-gray-600 opacity-0 hover:bg-white/50 hover:text-neutral-800 group-hover:opacity-100"
+                  title="Close tab"
+                >
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
                     />
-                    {/* Fallback icon (hidden by default, shown when favicon fails) */}
-                    <div
-                      className="mr-2 h-4 w-4 flex-shrink-0 rounded-full bg-neutral-200/80"
-                      style={{ display: "none" }}
-                    />
-                  </>
-                ) : (
-                  <div className="mr-2 h-4 w-4 flex-shrink-0 rounded-full bg-neutral-200/80" />
-                )}
-                <span className="flex-1 truncate text-xs">
-                  {truncateTitle(tab.title || "New Tab")}
-                </span>
+                  </svg>
+                </button>
               </div>
 
-              <button
-                onClick={(e) => onTabClose(tab.id, e)}
-                className="absolute right-2 flex-shrink-0 rounded p-1 text-gray-600 opacity-0 hover:bg-white/50 hover:text-neutral-800 group-hover:opacity-100"
-                title="Close tab"
-              >
-                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
               {tab.isActive ? (
                 <>
                   <svg
@@ -113,12 +118,9 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
                   </svg>
                 </>
               ) : null}
+
               {index === tabs.length - 1 && (
-                <motion.button
-                  layout
-                  transition={{
-                    layout: { type: "spring", stiffness: 1000, damping: 60 },
-                  }}
+                <button
                   onClick={onNewTab}
                   className="absolute left-full ml-1 flex aspect-square h-full items-center justify-center rounded-t hover:bg-white/40 focus:outline-none"
                   style={{ WebkitAppRegion: "no-drag" } as any}
@@ -132,7 +134,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
                       d="M12 4v16m8-8H4"
                     />
                   </svg>
-                </motion.button>
+                </button>
               )}
             </motion.div>
           ))}
