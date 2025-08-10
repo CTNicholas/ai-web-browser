@@ -54,8 +54,29 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
               <div className="flex min-w-0 items-center px-2" style={{ width: 180 }}>
                 {tab.isLoading ? (
                   <div className="mr-2 h-4 w-4 flex-shrink-0 animate-spin rounded-full border-[2px] border-neutral-500 border-t-transparent" />
+                ) : tab.favicon ? (
+                  <>
+                    <img
+                      src={tab.favicon}
+                      alt="favicon"
+                      className="mr-2 h-4 w-4 flex-shrink-0 rounded-sm"
+                      onError={(e) => {
+                        // Fallback to default icon if favicon fails to load
+                        e.currentTarget.style.display = "none";
+                        const fallbackIcon = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (fallbackIcon) {
+                          fallbackIcon.style.display = "block";
+                        }
+                      }}
+                    />
+                    {/* Fallback icon (hidden by default, shown when favicon fails) */}
+                    <div
+                      className="mr-2 h-4 w-4 flex-shrink-0 rounded-full bg-neutral-200/80"
+                      style={{ display: "none" }}
+                    />
+                  </>
                 ) : (
-                  <div className="mr-2 h-4 w-4 flex-shrink-0 rounded-sm bg-neutral-400" />
+                  <div className="mr-2 h-4 w-4 flex-shrink-0 rounded-full bg-neutral-200/80" />
                 )}
                 <span className="flex-1 truncate text-xs">
                   {truncateTitle(tab.title || "New Tab")}

@@ -175,6 +175,7 @@ function App() {
                   url: info.url,
                   title: info.url === "about:blank" ? "New tab" : info.title || "Untitled",
                   isLoading: false,
+                  favicon: info.favicon || "",
                 }
               : tab,
           ),
@@ -368,7 +369,7 @@ function App() {
             <div className="relative flex-1 rounded-[3px] border border-gray-300/80 shadow-sm">
               <div className="relative h-full w-full overflow-hidden rounded-lg">
                 {/* Measured area for the BrowserView */}
-                <div ref={contentRef} className="absolute inset-0" />
+                <div ref={contentRef} className="pointer-events-none absolute inset-0" />
 
                 {activeTab ? (
                   activeTab.url === "about:blank" ? (
@@ -479,9 +480,9 @@ function App() {
                 />
 
                 <RegisterAiTool
-                  name="navigate"
+                  name="redirect-user"
                   tool={defineAiTool()({
-                    description: "Navigate to a URL",
+                    description: "Navigate the user to a URL",
                     parameters: {
                       type: "object",
                       properties: {
@@ -494,11 +495,12 @@ function App() {
                           description: "Where you're going, (e.g. `Google`)",
                         },
                       },
-                      required: ["url"],
+                      required: ["url", "title"],
                       additionalProperties: false,
                     },
                     execute: async ({ url }) => {
                       navigateTab(url);
+                      return { data: {}, description: "Navigated to " + url };
                     },
                     render: ({ args, stage }) =>
                       args ? (
@@ -511,7 +513,7 @@ function App() {
                 />
 
                 <RegisterAiTool
-                  name="navigate-on-confirm"
+                  name="redirect-user-on-confirm"
                   tool={defineAiTool()({
                     description: "Ask the user if they'd like to navigate to a URL",
                     parameters: {
@@ -538,6 +540,13 @@ function App() {
                           <AiTool.Confirmation
                             confirm={async () => {
                               navigateTab(args.url);
+                              return { data: {}, description: "Navigated to " + args.url };
+                            }}
+                            cancel={async () => {
+                              return {
+                                data: {},
+                                description: "User cancelled navigating to " + args.url,
+                              };
                             }}
                           >
                             <div className="font-mono text-xs">{args.url}</div>

@@ -51,6 +51,7 @@ export const useBrowserAPI = (): BrowserAPI | null => {
             title: "Mock Tab",
             canGoBack: false,
             canGoForward: false,
+            favicon: null,
           }),
           getTabContent: async (viewId: string) => ({
             html: "<h1>Mock Content</h1><p>This is mock webpage content for development.</p>",
@@ -86,6 +87,7 @@ export const useBrowserAPI = (): BrowserAPI | null => {
           title: "Fallback",
           canGoBack: false,
           canGoForward: false,
+          favicon: null,
         }),
         getTabContent: async () => ({
           html: "<h1>Fallback Content</h1><p>This is fallback webpage content.</p>",

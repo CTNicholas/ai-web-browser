@@ -148,14 +148,42 @@ ipcMain.handle("navigate-tab", (event, viewId, url) => {
   return false;
 });
 
-ipcMain.handle("get-tab-info", (event, viewId) => {
+ipcMain.handle("get-tab-info", async (event, viewId) => {
   const webContentsView = webContentsViews.get(viewId);
   if (webContentsView) {
+    let favicon = null;
+
+    try {
+      // Try to get favicon by executing JavaScript in the page
+      favicon = await webContentsView.webContents.executeJavaScript(`
+        (() => {
+          // Look for favicon link elements
+          const faviconLink = document.querySelector('link[rel*="icon"]');
+          if (faviconLink && faviconLink.href) {
+            return faviconLink.href;
+          }
+          
+          // Fallback to default favicon.ico
+          const url = new URL(window.location.href);
+          return url.origin + '/favicon.ico';
+        })();
+      `);
+    } catch (error) {
+      // If JavaScript execution fails, try default favicon path
+      try {
+        const url = new URL(webContentsView.webContents.getURL());
+        favicon = url.origin + "/favicon.ico";
+      } catch (urlError) {
+        favicon = null;
+      }
+    }
+
     return {
       url: webContentsView.webContents.getURL(),
       title: webContentsView.webContents.getTitle(),
       canGoBack: webContentsView.webContents.navigationHistory.canGoBack(),
       canGoForward: webContentsView.webContents.navigationHistory.canGoForward(),
+      favicon: favicon,
     };
   }
   return null;
