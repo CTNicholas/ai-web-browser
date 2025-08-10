@@ -27,14 +27,15 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
             <motion.div
               key={tab.id}
               layout
-              initial={{ width: 32, opacity: 0.4 }}
+              initial={{ width: 80, opacity: 0.4 }}
               animate={{ width: 180, opacity: 1 }}
-              exit={{ width: 0, opacity: 0, scale: 0.8 }}
+              exit={{ width: 0, opacity: 0, scale: 0.8, filter: 'blur(4px)' }}
               transition={{
                 layout: { type: 'spring', stiffness: 800, damping: 60 },
                 width: { type: 'spring', stiffness: 600, damping: 45 },
                 opacity: { duration: 0.1 },
                 scale: { duration: 0.1 },
+                filter: { duration: 0.1 },
               }}
               style={{ originX: 0, WebkitAppRegion: 'no-drag', overflow: 'hidden' } as any}
               className={`group relative flex h-full cursor-pointer items-center rounded-[5px] rounded-b-none ${
@@ -63,7 +64,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
 
               <button
                 onClick={(e) => onTabClose(tab.id, e)}
-                className="absolute right-2 flex-shrink-0 rounded p-1 text-neutral-600 opacity-0 transition-opacity hover:bg-white/50 hover:text-neutral-800 group-hover:opacity-100"
+                className="absolute right-2 flex-shrink-0 rounded p-1 text-neutral-600 opacity-0 hover:bg-white/50 hover:text-neutral-800 group-hover:opacity-100"
                 title="Close tab"
               >
                 <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,7 +81,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
         </AnimatePresence>
         <button
           onClick={onNewTab}
-          className="flex aspect-square h-full items-center justify-center rounded-t transition-colors hover:bg-white/40"
+          className="flex aspect-square h-full items-center justify-center rounded-t hover:bg-white/20 focus:outline-none"
           style={{ WebkitAppRegion: 'no-drag' } as any}
           title="New tab"
         >

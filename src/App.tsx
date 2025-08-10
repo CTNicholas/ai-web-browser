@@ -283,8 +283,8 @@ function App() {
   return (
     <LiveblocksProvider authEndpoint="http://localhost:3002/liveblocks-auth">
       <RoomProvider id="browser-room" initialPresence={{}}>
-        <div className="flex h-screen flex-col bg-neutral-100/30">
-          <div className="p-2 pb-0 pl-24">
+        <div className="flex h-screen flex-col bg-gray-200/30">
+          <div className="p-2 pb-0 pl-[93px]">
             <div className="relative flex h-8 flex-row justify-between">
               <div className="absolute inset-0" style={{ WebkitAppRegion: 'drag' } as any}></div>
               {/* <AddressBar
@@ -321,7 +321,7 @@ function App() {
             </div>
           </div>
           <div className="m-2 mt-0 flex flex-1 flex-row gap-2 rounded-[5px] bg-white/70 p-2 shadow">
-            <div className="relative flex-1 rounded-[3px] border border-neutral-200 shadow-sm">
+            <div className="relative flex-1 rounded-[3px] border border-gray-300/80 shadow-sm">
               <div className="relative h-full w-full overflow-hidden rounded-lg">
                 {/* Measured area for the BrowserView */}
                 <div ref={contentRef} className="absolute inset-0" />
@@ -335,7 +335,7 @@ function App() {
                           <input
                             type="text"
                             placeholder="Search or enter web address"
-                            className="w-96 rounded-lg border border-neutral-300 px-4 py-3 text-center focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                            className="w-96 rounded-lg border border-neutral-300/30 px-4 py-3 text-center focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 const value = e.currentTarget.value.trim();
@@ -410,7 +410,7 @@ function App() {
                 )}
               </div>
             </div>
-            <div className="w-[340px] rounded-[3px] border bg-white shadow-sm">
+            <div className="w-[340px] rounded-[3px] border border-gray-300/80 bg-white shadow-sm">
               <div className="p-4">
                 <h3 className="mb-2 font-medium text-neutral-700">AI Chat</h3>
                 <div className="text-sm text-neutral-500">AI assistant will appear here</div>
