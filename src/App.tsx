@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Tab } from './types';
 import { useBrowserAPI } from './hooks/useBrowserAPI';
 import TabBar from './components/TabBar';
-import AddressBar from './components/AddressBar';
+// import AddressBar from './components/AddressBar';
 import { LiveblocksProvider, RoomProvider } from '@liveblocks/react';
 
 function App() {
@@ -43,17 +43,17 @@ function App() {
     } catch {}
   };
 
-  const createNewTab = async (url: string = 'https://www.google.com') => {
+  const createNewTab = async (url: string = 'about:blank') => {
     if (!browserAPI) return;
 
     try {
       const result = await browserAPI.createTab(url);
       const newTab: Tab = {
         id: result.id,
-        title: 'Loading...',
+        title: url === 'about:blank' ? 'New Tab' : 'Loading...',
         url: result.url,
         isActive: true,
-        isLoading: true,
+        isLoading: url !== 'about:blank',
       };
 
       setTabs((prev) => prev.map((t) => ({ ...t, isActive: false })).concat(newTab));
@@ -158,7 +158,7 @@ function App() {
   // Create initial tab
   useEffect(() => {
     if (browserAPI && tabs.length === 0) {
-      createNewTab();
+      createNewTab('https://www.google.com');
     }
   }, [browserAPI]);
 
@@ -173,7 +173,7 @@ function App() {
     return () => clearInterval(interval);
   }, [activeTabId, browserAPI]);
 
-  const currentNavInfo = activeTabId ? tabNavInfo[activeTabId] : null;
+  // const currentNavInfo = activeTabId ? tabNavInfo[activeTabId] : null;
 
   // Report content area bounds to Electron main so BrowserView fills flex space
   useEffect(() => {
@@ -258,15 +258,74 @@ function App() {
                 <div ref={contentRef} className="absolute inset-0" />
 
                 {activeTab ? (
-                  <div className="pointer-events-none flex h-full items-center justify-center text-neutral-500">
-                    <div className="text-center">
-                      <div className="mb-2 text-lg">{activeTab.title}</div>
-                      <div className="text-sm">{activeTab.url}</div>
-                      <div className="mt-4 text-xs text-neutral-400">
-                        Web content is displayed here via Electron BrowserView
+                  activeTab.url === 'about:blank' ? (
+                    <div className="flex h-full items-center justify-center text-neutral-600">
+                      <div className="text-center">
+                        <div className="mb-6 text-2xl font-light">New Tab</div>
+                        <div className="mb-8">
+                          <input
+                            type="text"
+                            placeholder="Search or enter web address"
+                            className="w-96 rounded-lg border border-neutral-300 px-4 py-3 text-center focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const value = e.currentTarget.value.trim();
+                                if (value) {
+                                  const url =
+                                    value.includes('.') && !value.includes(' ')
+                                      ? value.startsWith('http')
+                                        ? value
+                                        : `https://${value}`
+                                      : `https://www.google.com/search?q=${encodeURIComponent(value)}`;
+                                  navigateTab(url);
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 gap-4 text-sm">
+                          <button
+                            onClick={() => navigateTab('https://www.google.com')}
+                            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
+                          >
+                            <div className="mb-2 text-lg">🔍</div>
+                            <div>Google</div>
+                          </button>
+                          <button
+                            onClick={() => navigateTab('https://www.youtube.com')}
+                            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
+                          >
+                            <div className="mb-2 text-lg">📺</div>
+                            <div>YouTube</div>
+                          </button>
+                          <button
+                            onClick={() => navigateTab('https://www.github.com')}
+                            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
+                          >
+                            <div className="mb-2 text-lg">⚡</div>
+                            <div>GitHub</div>
+                          </button>
+                          <button
+                            onClick={() => navigateTab('https://www.twitter.com')}
+                            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
+                          >
+                            <div className="mb-2 text-lg">🐦</div>
+                            <div>Twitter</div>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="pointer-events-none flex h-full items-center justify-center text-neutral-500">
+                      <div className="text-center">
+                        <div className="mb-2 text-lg">{activeTab.title}</div>
+                        <div className="text-sm">{activeTab.url}</div>
+                        <div className="mt-4 text-xs text-neutral-400">
+                          Web content is displayed here via Electron BrowserView
+                        </div>
+                      </div>
+                    </div>
+                  )
                 ) : (
                   <div className="flex h-full items-center justify-center text-neutral-500">
                     <div className="text-center">

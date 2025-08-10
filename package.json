@@ -26,7 +26,8 @@
     "dotenv": "^16.4.5",
     "electron": "^37.2.6",
     "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "motion": "^12.23.12"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
