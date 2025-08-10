@@ -17,4 +17,22 @@ body {
 .lb-root {
   font-size: 14px;
   --lb-accent: rgb(3, 180, 224);
+  --lb-radius: 10px;
+  --lb-spacing: 14px;
+}
+
+.lb-ai-chat,
+.lb-ai-chat::before,
+.lb-ai-chat::after,
+.lb-ai-chat:where(.lb-ai-chat\:layout-inset) :where(.lb-ai-chat-footer):before {
+  background: transparent !important;
+}
+
+.lb-ai-chat-composer {
+  box-shadow: none !important;
+  border: 1px solid #e0e0e0;
+}
+
+.lb-ai-chat-footer {
+  /* padding-bottom: 0; */
 }

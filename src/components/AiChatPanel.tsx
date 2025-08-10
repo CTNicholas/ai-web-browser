@@ -20,8 +20,8 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({
   onNavigate,
 }) => {
   return (
-    <div className="absolute inset-0">
-      <AiChat chatId={activeTabId} layout="compact" />
+    <div className="absolute -bottom-[8px] left-[-14px] right-[-8px] top-[-8px]">
+      <AiChat chatId={activeTabId} className="-mb-[14px] h-full" />
 
       <RegisterAiKnowledge
         description="The current web page's URL"

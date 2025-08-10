@@ -40,7 +40,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
               style={{ originX: 0, WebkitAppRegion: "no-drag" } as any}
               className={`group relative flex h-full cursor-pointer items-center rounded-[5px] rounded-b-none ${
                 tab.isActive
-                  ? "bg-gradient-to-b from-white/80 to-white/70"
+                  ? "bg-gradient-to-b from-white to-white/80"
                   : "bg-white/0 hover:bg-white/40"
               } `}
               onClick={() => onTabClick(tab.id)}

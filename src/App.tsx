@@ -387,7 +387,7 @@ function App() {
               />
             </div>
           </div>
-          <div className="m-2 mt-0 flex flex-1 flex-row gap-2 rounded-[5px] bg-white/70 p-2 shadow">
+          <div className="m-2 mt-0 flex flex-1 flex-row gap-2 rounded-[5px] bg-white/80 p-2 shadow">
             <div className="relative flex-1 rounded-[3px] border border-gray-300/80 shadow-sm">
               <div className="relative h-full w-full overflow-hidden rounded-lg">
                 {/* Measured area for the BrowserView */}
@@ -416,7 +416,7 @@ function App() {
             </div>
             {/* Only show AI chat when not on about:blank (new tab page) */}
             {activeTab && activeTab.url !== "about:blank" && (
-              <div className="relative w-[340px] overflow-hidden rounded-[3px] border border-gray-300/80 bg-white shadow-sm">
+              <div className="relative w-[340px] rounded-[3px] border-gray-300/80">
                 <AiChatPanel
                   activeTabId={activeTabId || "New tab"}
                   activeTabUrl={activeTab?.url}
