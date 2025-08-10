@@ -356,14 +356,12 @@ function App() {
                   }
                 }}
               /> */}
-              <div className="relative z-10 flex items-center gap-2">
-                <TabBar
-                  tabs={tabs}
-                  onTabClick={switchToTab}
-                  onTabClose={closeTab}
-                  onNewTab={() => createNewTab()}
-                />
-              </div>
+              <TabBar
+                tabs={tabs}
+                onTabClick={switchToTab}
+                onTabClose={closeTab}
+                onNewTab={() => createNewTab()}
+              />
             </div>
           </div>
           <div className="m-2 mt-0 flex flex-1 flex-row gap-2 rounded-[5px] bg-white/70 p-2 shadow">
