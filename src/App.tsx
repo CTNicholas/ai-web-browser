@@ -294,26 +294,51 @@ function App() {
     if (typeof window === "undefined" || !window.require) return;
     const { ipcRenderer } = window.require("electron");
 
+    let rafId: number;
+    let lastBounds = { x: 0, y: 0, width: 0, height: 0 };
+
     const updateBounds = () => {
       const el = contentRef.current;
       if (!el) return;
+      
       const r = el.getBoundingClientRect();
-      ipcRenderer.invoke("layout-browserview", {
+      const bounds = {
         x: Math.round(r.left),
         y: Math.round(r.top),
         width: Math.round(r.width),
         height: Math.round(r.height),
-      });
+      };
+
+      // Only skip if bounds are exactly the same (let Electron handle micro-changes)
+      if (bounds.x === lastBounds.x && 
+          bounds.y === lastBounds.y && 
+          bounds.width === lastBounds.width && 
+          bounds.height === lastBounds.height) {
+        return;
+      }
+
+      lastBounds = { ...bounds };
+      
+      // Fire-and-forget for maximum performance - don't await
+      ipcRenderer.invoke("layout-browserview", bounds);
     };
 
-    const ro = new ResizeObserver(() => updateBounds());
+    const scheduleUpdate = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateBounds);
+    };
+
+    const ro = new ResizeObserver(scheduleUpdate);
     if (contentRef.current) ro.observe(contentRef.current);
-    window.addEventListener("resize", updateBounds);
-    updateBounds();
+    window.addEventListener("resize", scheduleUpdate);
+    
+    // Initial update
+    scheduleUpdate();
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       ro.disconnect();
-      window.removeEventListener("resize", updateBounds);
+      window.removeEventListener("resize", scheduleUpdate);
     };
   }, []);
 

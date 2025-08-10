@@ -260,14 +260,33 @@ ipcMain.handle("get-tab-content", async (event, viewId) => {
   return null;
 });
 
+let lastBounds = null;
+
 ipcMain.handle("layout-browserview", (event, bounds) => {
+  // Skip if bounds haven't actually changed
+  if (lastBounds && 
+      lastBounds.x === bounds.x && 
+      lastBounds.y === bounds.y && 
+      lastBounds.width === bounds.width && 
+      lastBounds.height === bounds.height) {
+    return true;
+  }
+  
   contentBounds = bounds;
+  lastBounds = { ...bounds };
+  
+  // Update immediately for 60fps+ performance
   if (activeViewId) {
     const webContentsView = webContentsViews.get(activeViewId);
     if (webContentsView) {
-      webContentsView.setBounds(contentBounds);
+      try {
+        webContentsView.setBounds(contentBounds);
+      } catch (error) {
+        console.error("Error setting bounds:", error);
+      }
     }
   }
+  
   return true;
 });
 
