@@ -358,7 +358,7 @@ function App() {
   return (
     <LiveblocksProvider authEndpoint="http://localhost:3002/liveblocks-auth">
       <RoomProvider id="browser-room" initialPresence={{}}>
-        <div className="flex h-screen flex-col bg-gray-200/30">
+        <div className="flex h-screen flex-col bg-gray-200/10">
           <div className="p-2 pb-0 pl-[93px]">
             <div className="relative flex h-8 flex-row justify-between">
               <div className="absolute inset-0" style={{ WebkitAppRegion: "drag" } as any}></div>
@@ -395,7 +395,7 @@ function App() {
               />
             </div>
           </div>
-          <div className="m-2 mt-0 flex flex-1 flex-row gap-2 rounded-[5px] bg-white/70 p-2 shadow">
+          <div className="m-2 mt-0 flex flex-1 flex-row gap-2 rounded-[5px] bg-white/80 p-2 shadow">
             <div className="relative flex-1 rounded-[3px] border border-gray-300/80 shadow-sm">
               <div className="relative h-full w-full overflow-hidden rounded-lg">
                 {/* Measured area for the BrowserView */}

@@ -15,8 +15,8 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
   };
 
   return (
-    <div className="z-10 flex h-full grow items-center">
-      {/* Spacer for macOS traffic lights (●●●) */}
+    <div className="relative z-10 flex h-full grow items-center">
+      <div className="absolute -bottom-3 left-0 right-0 top-0 bg-gradient-to-b from-white/0 via-white/10 to-white/30 blur-md" />
       <motion.div
         className="flex h-full flex-1 gap-1"
         layout
@@ -41,10 +41,10 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
               className="relative flex h-full"
             >
               <div
-                className={`group flex h-full w-full cursor-pointer items-center rounded-[5px] rounded-b-none ${
+                className={`group flex h-full w-full cursor-pointer items-center rounded-[9px] rounded-b-none ${
                   tab.isActive
-                    ? "bg-gradient-to-b from-white/80 to-white/70"
-                    : "bg-white/0 hover:bg-white/40"
+                    ? "bg-gradient-to-b from-white/90 to-white/80 [box-shadow:0_-0.5px_2px_rgba(0,0,0,0.05)]"
+                    : "hover[box-shadow:0_-0.5px_2px_rgba(0,0,0,0.05)] hoverbg-white/50 hover:bg-gradient-to-b hover:from-white/50 hover:to-white/40"
                 }`}
                 onClick={() => onTabClick(tab.id)}
                 onMouseDown={(e) => {
@@ -105,13 +105,13 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
               {tab.isActive ? (
                 <>
                   <svg
-                    className="absolute bottom-0 right-full h-[5px] w-[5px] fill-white/70"
+                    className="absolute bottom-0 right-full size-[6px] fill-white/70"
                     viewBox="0 0 50 50"
                   >
                     <path d="M 0,50 A 50,50 0 0,0 50,0 L 50,50 Z" fill="" />
                   </svg>
                   <svg
-                    className="absolute bottom-0 left-full h-[5px] w-[5px] scale-x-[-1] fill-white/70"
+                    className="absolute bottom-0 left-full size-[6px] scale-x-[-1] fill-white/70"
                     viewBox="0 0 50 50"
                   >
                     <path d="M 0,50 A 50,50 0 0,0 50,0 L 50,50 Z" fill="" />
