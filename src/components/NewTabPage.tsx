@@ -17,6 +17,8 @@ const NewTabPage: React.FC<NewTabPageProps> = ({ onNavigate }) => {
     }
   };
 
+  return <div className="flex h-full w-full items-center justify-center bg-white">TODO</div>;
+
   return (
     <div className="flex h-full items-center justify-center text-neutral-600">
       <div className="text-center">

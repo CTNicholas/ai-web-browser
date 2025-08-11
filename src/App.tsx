@@ -429,8 +429,16 @@ function App() {
                   activeTabId={activeTabId || "New tab"}
                   activeTabUrl={activeTab?.url}
                   webpageContent={webpageContent}
+                  tabs={tabs}
                   onNavigate={navigateTab}
                   onCreateNewTab={createNewTab}
+                  onSwitchTab={switchToTab}
+                  onCloseTabs={async (tabIds: string[]) => {
+                    for (const tabId of tabIds) {
+                      const syntheticEvent = { stopPropagation: () => {} } as React.MouseEvent;
+                      await closeTab(tabId, syntheticEvent);
+                    }
+                  }}
                 />
               </div>
             )}

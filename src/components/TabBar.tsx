@@ -41,7 +41,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
               className="relative flex h-full"
             >
               <div
-                className={`group flex h-full w-full cursor-pointer items-center rounded-[9px] rounded-b-none ${
+                className={`group flex h-full w-full cursor-pointer select-none items-center rounded-[9px] rounded-b-none ${
                   tab.isActive
                     ? "bg-gradient-to-b from-white/90 to-white/80 [box-shadow:0_-0.5px_2px_rgba(0,0,0,0.05)]"
                     : "hover[box-shadow:0_-0.5px_2px_rgba(0,0,0,0.05)] hoverbg-white/50 hover:bg-gradient-to-b hover:from-white/50 hover:to-white/40"

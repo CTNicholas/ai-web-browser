@@ -3,6 +3,7 @@ import { AiChat, AiTool } from "@liveblocks/react-ui";
 import { RegisterAiKnowledge, RegisterAiTool } from "@liveblocks/react";
 import { defineAiTool } from "@liveblocks/client";
 import { turndownService } from "../utils/turndownService";
+import { Tab } from "../types";
 
 interface AiChatPanelProps {
   activeTabId: string;
@@ -11,16 +12,22 @@ interface AiChatPanelProps {
     isLoading: boolean;
     markdown: string | null;
   };
+  tabs: Tab[];
   onNavigate: (url: string) => void;
   onCreateNewTab?: (url: string) => void;
+  onSwitchTab?: (tabId: string) => void;
+  onCloseTabs?: (tabIds: string[]) => void;
 }
 
 const AiChatPanel: React.FC<AiChatPanelProps> = ({
   activeTabId,
   activeTabUrl,
   webpageContent,
+  tabs,
   onNavigate,
   onCreateNewTab,
+  onSwitchTab,
+  onCloseTabs,
 }) => {
   return (
     <div className="absolute inset-0">
@@ -39,6 +46,8 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({
             : webpageContent.markdown || "The webpage is empty"
         }
       />
+
+      <RegisterAiKnowledge description="All open browser tabs" value={JSON.stringify(tabs)} />
 
       <RegisterAiTool
         name="redirect-user"
@@ -174,6 +183,188 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({
                 icon={<NewTabIcon />}
                 title={`${stage === "executed" ? "Opened" : "Opening"} new tab for ${args.title}`}
               />
+            ) : null,
+        })}
+      />
+
+      <RegisterAiTool
+        name="switch-tab"
+        tool={defineAiTool()({
+          description: "Switch to a specific browser tab",
+          parameters: {
+            type: "object",
+            properties: {
+              tabId: {
+                type: "string",
+                description: "The ID of the tab to switch to",
+              },
+              tabTitle: {
+                type: "string",
+                description: "The title of the tab being switched to (for display purposes)",
+              },
+            },
+            required: ["tabId"],
+            additionalProperties: false,
+          },
+          execute: async ({ tabId }) => {
+            try {
+              const targetTab = tabs.find((tab) => tab.id === tabId);
+
+              if (!targetTab) {
+                throw new Error(`Tab with ID "${tabId}" not found`);
+              }
+
+              if (targetTab.isActive) {
+                return {
+                  data: { tabId, title: targetTab.title },
+                  description: `Already on tab "${targetTab.title}"`,
+                };
+              }
+
+              if (onSwitchTab) {
+                await onSwitchTab(tabId);
+                return {
+                  data: { tabId, title: targetTab.title },
+                  description: `Switched to tab "${targetTab.title}"`,
+                };
+              } else {
+                throw new Error("Tab switching is not available");
+              }
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error ? error.message : "Unknown error occurred";
+              return {
+                data: { error: errorMessage },
+                description: `Failed to switch tab: ${errorMessage}`,
+              };
+            }
+          },
+          render: ({ args, result, stage }) =>
+            args ? (
+              <AiTool
+                icon={<SwitchTabIcon />}
+                title={
+                  stage === "executed"
+                    ? result?.data?.error
+                      ? `Failed to switch to tab`
+                      : `Switched to "${result?.data?.title || args.tabTitle || "tab"}"`
+                    : `Switching to "${args.tabTitle || "tab"}"`
+                }
+              />
+            ) : null,
+        })}
+      />
+
+      <RegisterAiTool
+        name="close-tabs"
+        tool={defineAiTool()({
+          description: "Close one or more browser tabs",
+          parameters: {
+            type: "object",
+            properties: {
+              tabIds: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+                description: "Array of tab IDs to close",
+              },
+              tabTitles: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+                description: "Array of tab titles being closed (for display purposes)",
+              },
+            },
+            required: ["tabIds"],
+            additionalProperties: false,
+          },
+          execute: async ({ tabIds }) => {
+            try {
+              if (!Array.isArray(tabIds) || tabIds.length === 0) {
+                throw new Error("No tab IDs provided");
+              }
+
+              // Validate that all tabs exist
+              const invalidTabs = tabIds.filter((id) => !tabs.find((tab) => tab.id === id));
+              if (invalidTabs.length > 0) {
+                throw new Error(`Tabs not found: ${invalidTabs.join(", ")}`);
+              }
+
+              // Allow closing all tabs - the browser will handle creating a new tab if needed
+
+              if (onCloseTabs) {
+                // Check if the current active tab is being closed
+                const activeTab = tabs.find((tab) => tab.isActive);
+                const isClosingActiveTab = activeTab && tabIds.includes(activeTab.id);
+
+                // Find a tab to switch to if we're closing the active tab
+                let switchToTabId = null;
+                if (isClosingActiveTab && tabs.length > tabIds.length) {
+                  // Find the first tab that won't be closed
+                  const remainingTab = tabs.find((tab) => !tabIds.includes(tab.id));
+                  if (remainingTab) {
+                    switchToTabId = remainingTab.id;
+                  }
+                }
+
+                // Switch to another tab before closing if needed
+                if (switchToTabId && onSwitchTab) {
+                  await onSwitchTab(switchToTabId);
+                }
+
+                await onCloseTabs(tabIds);
+                const closedTabs = tabs.filter((tab) => tabIds.includes(tab.id));
+                const closedTitles = closedTabs.map((tab) => tab.title);
+
+                let description = `Closed ${tabIds.length} tab${tabIds.length === 1 ? "" : "s"}: ${closedTitles.join(", ")}`;
+                if (switchToTabId) {
+                  const switchedToTab = tabs.find((tab) => tab.id === switchToTabId);
+                  if (switchedToTab) {
+                    description += ` and switched to "${switchedToTab.title}"`;
+                  }
+                }
+
+                return {
+                  data: {
+                    closedTabIds: tabIds,
+                    closedTitles: closedTitles,
+                    count: tabIds.length,
+                    switchedToTabId: switchToTabId,
+                  },
+                  description,
+                };
+              } else {
+                throw new Error("Tab closing is not available");
+              }
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error ? error.message : "Unknown error occurred";
+              return {
+                data: { error: errorMessage },
+                description: `Failed to close tabs: ${errorMessage}`,
+              };
+            }
+          },
+          render: ({ args, result, stage }) =>
+            args ? (
+              <AiTool
+                icon={<CloseTabIcon />}
+                title={
+                  stage === "executed"
+                    ? result?.data?.error
+                      ? `Failed to close tabs`
+                      : `Closed ${result?.data?.count || args.tabIds?.length || 0} tab${(result?.data?.count || args.tabIds?.length || 0) === 1 ? "" : "s"}`
+                    : `Closing ${args.tabIds?.length || 0} tab${(args.tabIds?.length || 0) === 1 ? "" : "s"}`
+                }
+              >
+                {result?.data?.error && (
+                  <div className="mt-2 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                    Error: {(result.data as any).error}
+                  </div>
+                )}
+              </AiTool>
             ) : null,
         })}
       />
@@ -334,6 +525,46 @@ function NewTabIcon(props: React.SVGProps<SVGSVGElement>) {
       {...props}
     >
       <path d="M5 12h14M12 5v14" />
+    </svg>
+  );
+}
+
+function SwitchTabIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="lucide lucide-arrow-right-left-icon lucide-arrow-right-left"
+      {...props}
+    >
+      <path d="M16 3l4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16" />
+    </svg>
+  );
+}
+
+function CloseTabIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="lucide lucide-x-icon lucide-x"
+      {...props}
+    >
+      <path d="M18 6L6 18M6 6l12 12" />
     </svg>
   );
 }
