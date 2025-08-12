@@ -16,6 +16,9 @@ function App() {
   const [tabAiChatVisible, setTabAiChatVisible] = useState<{
     [key: string]: boolean;
   }>({});
+  const [tabNewPageAiChatVisible, setTabNewPageAiChatVisible] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [tabNavInfo, setTabNavInfo] = useState<{
     [key: string]: { canGoBack: boolean; canGoForward: boolean };
   }>({});
@@ -132,10 +135,32 @@ function App() {
     if (!browserAPI) return;
 
     try {
+      // Check if this is the last tab before closing
+      const willBeLastTab = tabs.length === 1;
+
       await browserAPI.closeTab(tabId);
+
+      // If this was the last tab, clear tabs and create a new one
+      if (willBeLastTab) {
+        setTabs([]); // Clear all tabs first
+        await createNewTab(); // Then create new tab
+        return;
+      }
 
       setTabs((prev) => {
         const newTabs = prev.filter((tab) => tab.id !== tabId);
+
+        // Clean up AI chat state for closed tab
+        setTabAiChatVisible((chatPrev) => {
+          const newChatState = { ...chatPrev };
+          delete newChatState[tabId];
+          return newChatState;
+        });
+        setTabNewPageAiChatVisible((newPageChatPrev) => {
+          const newNewPageChatState = { ...newPageChatPrev };
+          delete newNewPageChatState[tabId];
+          return newNewPageChatState;
+        });
 
         // If closing active tab, switch to another tab
         if (activeTabId === tabId && newTabs.length > 0) {
@@ -433,32 +458,32 @@ function App() {
             </div>
           </div>
           <div className="m-2 mt-0 flex flex-1 flex-row gap-2 rounded-[5px] bg-white/80 p-2 shadow">
-            <div className="relative flex-1 rounded-[3px] border border-gray-300/80 shadow-sm">
-              <div className="relative h-full w-full overflow-hidden rounded-lg">
-                {/* Measured area for the BrowserView */}
-                <div ref={contentRef} className="pointer-events-none absolute inset-0" />
-
-                {activeTab ? (
-                  activeTab.url === "about:blank" ? (
-                    <NewTabPage onNavigate={navigateTab} />
-                  ) : (
-                    <div className="h-full w-full bg-white">{/* Displays under webpages */}</div>
-                  )
-                ) : (
-                  <div className="flex h-full items-center justify-center text-neutral-500">
-                    <div className="text-center">
-                      <div className="mb-4 text-lg">Welcome to AI Web Browser</div>
-                      <button
-                        onClick={() => createNewTab()}
-                        className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-                      >
-                        Create New Tab
-                      </button>
-                    </div>
-                  </div>
-                )}
+            <div ref={contentRef} className="pointer-events-none absolute inset-0" />
+            {!activeTab || activeTab.url === "about:blank" ? (
+              <div className="relative flex h-full w-full items-center justify-center">
+                <NewTabPage
+                  onNavigate={navigateTab}
+                  tabId={activeTabId || ""}
+                  showAiChat={activeTabId ? tabNewPageAiChatVisible[activeTabId] : false}
+                  onShowAiChat={(show) => {
+                    if (activeTabId) {
+                      setTabNewPageAiChatVisible((prev) => ({
+                        ...prev,
+                        [activeTabId]: show,
+                      }));
+                    }
+                  }}
+                />
               </div>
-            </div>
+            ) : (
+              <div className="relative flex-1 rounded-[3px] border border-gray-300/80 shadow-sm">
+                <div className="relative h-full w-full overflow-hidden rounded-lg">
+                  {/* Measured area for the BrowserView */}
+                  <div ref={contentRef} className="pointer-events-none absolute inset-0" />
+                  <div className="h-full w-full bg-white">{/* Displays under webpages */}</div>
+                </div>
+              </div>
+            )}
             {/* Only show AI chat when not on about:blank (new tab page) and when visible for current tab */}
             {activeTab && activeTab.url !== "about:blank" && isCurrentTabAiChatVisible && (
               <div

@@ -17,6 +17,7 @@ interface AiChatPanelProps {
   onCreateNewTab?: (url: string) => void;
   onSwitchTab?: (tabId: string) => void;
   onCloseTabs?: (tabIds: string[]) => void;
+  layout?: "compact" | "inset";
 }
 
 const AiChatPanel: React.FC<AiChatPanelProps> = ({
@@ -28,14 +29,24 @@ const AiChatPanel: React.FC<AiChatPanelProps> = ({
   onCreateNewTab,
   onSwitchTab,
   onCloseTabs,
+  layout = "compact",
 }) => {
   return (
     <div className="absolute inset-0">
-      <AiChat chatId={activeTabId} layout="compact" />
+      <AiChat
+        chatId={activeTabId}
+        layout={layout}
+        className="[--lb-ai-chat-container-width:500px]"
+      />
 
       <RegisterAiKnowledge
         description="The current web page's URL"
         value={activeTabUrl || "No webpage open"}
+      />
+
+      <RegisterAiKnowledge
+        description="Today's time and date. Tell the user it in a pretty format"
+        value={new Date().toISOString()}
       />
 
       <RegisterAiKnowledge

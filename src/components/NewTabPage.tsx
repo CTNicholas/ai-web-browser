@@ -1,23 +1,62 @@
 import React from "react";
+import AiChatPanel from "./AiChatPanel";
+import { useCreateAiChat, useSendAiMessage } from "@liveblocks/react";
 
 interface NewTabPageProps {
+  tabId: string;
   onNavigate: (url: string) => void;
+  showAiChat?: boolean;
+  onShowAiChat?: (show: boolean) => void;
 }
 
-const NewTabPage: React.FC<NewTabPageProps> = ({ onNavigate }) => {
+const NewTabPage: React.FC<NewTabPageProps> = ({
+  tabId,
+  onNavigate,
+  showAiChat = false,
+  onShowAiChat,
+}) => {
+  const createAiChat = useCreateAiChat();
+  const sendAiMessage = useSendAiMessage(tabId, {
+    copilotId: process.env.VITE_LIVEBLOCKS_COPILOT_ID,
+  });
+
   const handleSearchSubmit = (value: string) => {
     if (value.trim()) {
-      const url =
-        value.includes(".") && !value.includes(" ")
-          ? value.startsWith("http")
-            ? value
-            : `https://${value}`
-          : `https://www.google.com/search?q=${encodeURIComponent(value)}`;
-      onNavigate(url);
+      // Check if this looks like a URL (contains a dot and no spaces, or starts with http)
+      const isUrl = (value.includes(".") && !value.includes(" ")) || value.startsWith("http");
+
+      if (isUrl) {
+        // It's a URL, navigate to it
+        const url = value.startsWith("http") ? value : `https://${value}`;
+        onNavigate(url);
+      } else {
+        // It's not a URL, show AI chat
+        if (onShowAiChat) {
+          onShowAiChat(true);
+        }
+        createAiChat(tabId);
+        sendAiMessage(value);
+      }
     }
   };
 
-  // return <div className="flex h-full w-full items-center justify-center bg-white">TODO</div>;
+  if (showAiChat) {
+    return (
+      <div className="relative h-full w-full overflow-hidden rounded-[3px] border border-gray-300/80 bg-white p-0 shadow-sm">
+        <AiChatPanel
+          activeTabId={tabId}
+          activeTabUrl="about:blank"
+          webpageContent={{ isLoading: false, markdown: null }}
+          tabs={[]}
+          onNavigate={onNavigate}
+          onCreateNewTab={() => {}}
+          onSwitchTab={() => {}}
+          onCloseTabs={() => {}}
+          layout="inset"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full items-center justify-center text-neutral-600">
