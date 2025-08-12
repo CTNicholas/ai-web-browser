@@ -89,6 +89,16 @@ ipcMain.handle("create-tab", (event, url = "https://www.google.com") => {
     }
   });
 
+  // Intercept Cmd+R/Ctrl+R in the webview and delegate to our custom handler
+  webContentsView.webContents.on("before-input-event", (event, input) => {
+    if ((input.meta || input.control) && input.key.toLowerCase() === "r") {
+      console.log("Intercepting Cmd+R/Ctrl+R in webview, delegating to custom handler");
+      event.preventDefault();
+      // Call our custom refresh handler
+      handleTabRefresh(viewId);
+    }
+  });
+
   webContentsViews.set(viewId, webContentsView);
 
   // Set initial bounds (will be adjusted by renderer)
@@ -262,19 +272,39 @@ ipcMain.handle("get-tab-content", async (event, viewId) => {
 
 let lastBounds = null;
 
+// Handle tab refresh from keyboard shortcut
+function handleTabRefresh(viewId) {
+  console.log("handleTabRefresh called for viewId:", viewId);
+  const webContentsView = webContentsViews.get(viewId);
+  if (webContentsView) {
+    console.log("WebContentsView found, calling reload()");
+    webContentsView.webContents.reload();
+    console.log("Reload called successfully");
+
+    // Notify the React app that the tab is refreshing
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("tab-refreshed", viewId);
+    }
+  } else {
+    console.log("WebContentsView not found for viewId:", viewId);
+  }
+}
+
 ipcMain.handle("layout-browserview", (event, bounds) => {
   // Skip if bounds haven't actually changed
-  if (lastBounds && 
-      lastBounds.x === bounds.x && 
-      lastBounds.y === bounds.y && 
-      lastBounds.width === bounds.width && 
-      lastBounds.height === bounds.height) {
+  if (
+    lastBounds &&
+    lastBounds.x === bounds.x &&
+    lastBounds.y === bounds.y &&
+    lastBounds.width === bounds.width &&
+    lastBounds.height === bounds.height
+  ) {
     return true;
   }
-  
+
   contentBounds = bounds;
   lastBounds = { ...bounds };
-  
+
   // Update immediately for 60fps+ performance
   if (activeViewId) {
     const webContentsView = webContentsViews.get(activeViewId);
@@ -286,7 +316,7 @@ ipcMain.handle("layout-browserview", (event, bounds) => {
       }
     }
   }
-  
+
   return true;
 });
 

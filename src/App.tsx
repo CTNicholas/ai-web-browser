@@ -248,6 +248,34 @@ function App() {
     }
   }, [browserAPI]);
 
+  // Listen for tab refresh events from Electron main process
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.require) return;
+
+    try {
+      const { ipcRenderer } = window.require("electron");
+
+      const handleTabRefreshed = (event: any, viewId: string) => {
+        console.log("Received tab-refreshed event for viewId:", viewId);
+        // Mark tab as loading
+        setTabs((prev) =>
+          prev.map((tab) => (tab.id === viewId ? { ...tab, isLoading: true } : tab)),
+        );
+
+        // Update tab info after refresh
+        setTimeout(() => updateTabInfo(viewId), 1000);
+      };
+
+      ipcRenderer.on("tab-refreshed", handleTabRefreshed);
+
+      return () => {
+        ipcRenderer.removeListener("tab-refreshed", handleTabRefreshed);
+      };
+    } catch (error) {
+      console.error("Failed to set up tab refresh listener:", error);
+    }
+  }, [updateTabInfo]);
+
   // Periodically update active tab info
   useEffect(() => {
     if (!activeTabId || !browserAPI) return;
