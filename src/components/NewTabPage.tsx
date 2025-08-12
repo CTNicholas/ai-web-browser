@@ -50,7 +50,7 @@ export function NewTabPage({
   return (
     // <div className="flex h-full w-[1000px] min-w-0 items-center justify-center text-gray-600">
     <div className="w-[600px] max-w-full p-12 text-center">
-      <div className="mb-6 text-3xl font-light text-gray-600">How can I help you?</div>
+      <div className="-mt-3 mb-7 text-3xl font-light text-gray-700">How can I help you?</div>
       <div className="mb-8">
         {/* Example of a React-friendly styled input for "Ask anything..." */}
         <div className="relative">
