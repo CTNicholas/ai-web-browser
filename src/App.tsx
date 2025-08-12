@@ -13,6 +13,9 @@ function App() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [tabAiChatVisible, setTabAiChatVisible] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [tabNavInfo, setTabNavInfo] = useState<{
     [key: string]: { canGoBack: boolean; canGoForward: boolean };
   }>({});
@@ -21,6 +24,21 @@ function App() {
   const { opacity, toggleOpacity } = useOpacityToggle(1, browserAPI, activeTabId);
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId) || null;
+
+  // Toggle AI chat visibility for current tab
+  const toggleAiChat = () => {
+    if (activeTabId) {
+      setTabAiChatVisible((prev) => ({
+        ...prev,
+        [activeTabId]: !prev[activeTabId],
+      }));
+      // Trigger layout bounds update after state change
+      sendLayoutBoundsOnNextFrame();
+    }
+  };
+
+  // Get current tab's AI chat visibility (default to true for new tabs)
+  const isCurrentTabAiChatVisible = activeTabId ? (tabAiChatVisible[activeTabId] ?? true) : true;
 
   // Helper to push current flex content bounds to Electron main
   const sendLayoutBounds = async () => {
@@ -215,6 +233,16 @@ function App() {
     return () => clearInterval(interval);
   }, [activeTabId, browserAPI]);
 
+  // Update layout when AI chat visibility changes
+  useEffect(() => {
+    if (activeTabId) {
+      // Small delay to allow React to finish rendering
+      setTimeout(() => {
+        sendLayoutBounds();
+      }, 50);
+    }
+  }, [isCurrentTabAiChatVisible, activeTabId]);
+
   // Keyboard navigation controls
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
@@ -340,6 +368,12 @@ function App() {
     // Initial update
     scheduleUpdate();
 
+    // Watch for AI chat visibility changes that might affect layout
+    const aiChatContainer = document.querySelector("[data-ai-chat-container]");
+    if (aiChatContainer) {
+      ro.observe(aiChatContainer);
+    }
+
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
       ro.disconnect();
@@ -392,6 +426,9 @@ function App() {
                 onTabClick={switchToTab}
                 onTabClose={closeTab}
                 onNewTab={() => createNewTab()}
+                onToggleAiChat={toggleAiChat}
+                isAiChatVisible={isCurrentTabAiChatVisible}
+                activeTab={activeTab}
               />
             </div>
           </div>
@@ -422,9 +459,12 @@ function App() {
                 )}
               </div>
             </div>
-            {/* Only show AI chat when not on about:blank (new tab page) */}
-            {activeTab && activeTab.url !== "about:blank" && (
-              <div className="relative w-[340px] overflow-hidden rounded-[3px] border border-gray-300/80 bg-white shadow-sm">
+            {/* Only show AI chat when not on about:blank (new tab page) and when visible for current tab */}
+            {activeTab && activeTab.url !== "about:blank" && isCurrentTabAiChatVisible && (
+              <div
+                data-ai-chat-container
+                className="relative w-[340px] overflow-hidden rounded-[3px] border border-gray-300/80 bg-white shadow-sm"
+              >
                 <AiChatPanel
                   activeTabId={activeTabId || "New tab"}
                   activeTabUrl={activeTab?.url}

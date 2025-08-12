@@ -7,15 +7,26 @@ interface TabBarProps {
   onTabClick: (tabId: string) => void;
   onTabClose: (tabId: string, e: React.MouseEvent) => void;
   onNewTab: () => void;
+  onToggleAiChat: () => void;
+  isAiChatVisible: boolean;
+  activeTab: Tab | null;
 }
 
-const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab }) => {
+const TabBar: React.FC<TabBarProps> = ({
+  tabs,
+  onTabClick,
+  onTabClose,
+  onNewTab,
+  onToggleAiChat,
+  isAiChatVisible,
+  activeTab,
+}) => {
   const truncateTitle = (title: string, maxLength: number = 20) => {
     return title.length > maxLength ? `${title.substring(0, maxLength)}...` : title;
   };
 
   return (
-    <div className="relative z-10 flex h-full grow items-center">
+    <div className="relative z-10 flex h-full grow items-center justify-between">
       <div className="absolute -bottom-3 left-0 right-0 top-0 bg-gradient-to-b from-white/0 via-white/10 to-white/30 blur-md" />
       <motion.div
         className="flex h-full flex-1 gap-1"
@@ -29,16 +40,16 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
               layout
               initial={{ width: 32, opacity: 0.4, filter: "blur(2px)" }}
               animate={{ width: 180, opacity: 1, filter: "blur(0px)" }}
-              exit={{ width: 0, opacity: 0, scale: 0.8, filter: "blur(2px)" }}
+              exit={{ width: 0, opacity: 0, scale: 0.9, filter: "blur(2px)" }}
               transition={{
                 layout: { type: "spring", stiffness: 800, damping: 60 },
                 width: { type: "spring", stiffness: 550, damping: 45 },
                 opacity: { duration: 0.3 },
-                scale: { duration: 0.1 },
+                scale: { duration: 0.2 },
                 filter: { duration: 0.1 },
               }}
-              style={{ originX: 0, WebkitAppRegion: "no-drag" } as any}
-              className="relative flex h-full"
+              style={{ WebkitAppRegion: "no-drag" } as any}
+              className="relative flex h-full !origin-bottom-left"
             >
               <div
                 className={`group flex h-full w-full cursor-pointer select-none items-center rounded-[9px] rounded-b-none ${
@@ -120,7 +131,10 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
               ) : null}
 
               {index === tabs.length - 1 && (
-                <button
+                <motion.button
+                  layoutId="new-tab-button"
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0 }}
                   onClick={onNewTab}
                   className="absolute left-full ml-1 flex aspect-square h-full items-center justify-center rounded-t hover:bg-white/40 focus:outline-none"
                   style={{ WebkitAppRegion: "no-drag" } as any}
@@ -134,12 +148,56 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, onTabClick, onTabClose, onNewTab 
                       d="M12 4v16m8-8H4"
                     />
                   </svg>
-                </button>
+                </motion.button>
               )}
             </motion.div>
           ))}
         </AnimatePresence>
       </motion.div>
+
+      {/* AI Chat Toggle Button - only show when not on new tab */}
+      {activeTab && activeTab.url !== "about:blank" && (
+        <div />
+        // <button
+        //   onClick={(e) => {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     console.log("AI chat toggle clicked!", isAiChatVisible);
+        //     onToggleAiChat();
+        //   }}
+        //   className="relative z-20 ml-2 flex h-7 w-7 items-center justify-center rounded bg-white/20 transition-colors hover:bg-white/40 focus:outline-none"
+        //   style={{ WebkitAppRegion: "no-drag" } as any}
+        //   title={isAiChatVisible ? "Hide AI Chat" : "Show AI Chat"}
+        // >
+        //   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        //     {isAiChatVisible ? (
+        //       // Chat bubble with X (hide)
+        //       <g>
+        //         <path
+        //           strokeLinecap="round"
+        //           strokeLinejoin="round"
+        //           strokeWidth={2}
+        //           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+        //         />
+        //         <path
+        //           strokeLinecap="round"
+        //           strokeLinejoin="round"
+        //           strokeWidth={2}
+        //           d="M9 9l6 6M15 9l-6 6"
+        //         />
+        //       </g>
+        //     ) : (
+        //       // Chat bubble (show)
+        //       <path
+        //         strokeLinecap="round"
+        //         strokeLinejoin="round"
+        //         strokeWidth={2}
+        //         d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+        //       />
+        //     )}
+        //   </svg>
+        // </button>
+      )}
     </div>
   );
 };
