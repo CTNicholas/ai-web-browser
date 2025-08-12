@@ -5,9 +5,10 @@ import { useWebpageContent } from "./hooks/useWebpageContent";
 import { useOpacityToggle } from "./hooks/useOpacityToggle";
 import TabBar from "./components/TabBar";
 import NewTabPage from "./components/NewTabPage";
-import AiChatPanel from "./components/AiChatPanel";
+import { AiChatPanel } from "./components/AiChatPanel";
 // import AddressBar from './components/AddressBar';
 import { LiveblocksProvider, RoomProvider } from "@liveblocks/react";
+import { AiKnowledgeAndTools } from "./components/AiKnowledgeAndTools";
 
 function App() {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -417,6 +418,21 @@ function App() {
   return (
     <LiveblocksProvider authEndpoint="http://localhost:3002/liveblocks-auth">
       <RoomProvider id="browser-room" initialPresence={{}}>
+        <AiKnowledgeAndTools
+          activeTabId={activeTabId || "New tab"}
+          activeTabUrl={activeTab?.url}
+          webpageContent={webpageContent}
+          tabs={tabs}
+          onNavigate={navigateTab}
+          onCreateNewTab={createNewTab}
+          onSwitchTab={switchToTab}
+          onCloseTabs={async (tabIds: string[]) => {
+            for (const tabId of tabIds) {
+              const syntheticEvent = { stopPropagation: () => {} } as React.MouseEvent;
+              await closeTab(tabId, syntheticEvent);
+            }
+          }}
+        />
         <div className="flex h-screen flex-col bg-gray-200/10">
           <div className="p-2 pb-0 pl-[93px]">
             <div className="relative flex h-8 flex-row justify-between">
@@ -490,21 +506,7 @@ function App() {
                 data-ai-chat-container
                 className="relative w-[340px] overflow-hidden rounded-[3px] border border-gray-300/80 bg-white shadow-sm"
               >
-                <AiChatPanel
-                  activeTabId={activeTabId || "New tab"}
-                  activeTabUrl={activeTab?.url}
-                  webpageContent={webpageContent}
-                  tabs={tabs}
-                  onNavigate={navigateTab}
-                  onCreateNewTab={createNewTab}
-                  onSwitchTab={switchToTab}
-                  onCloseTabs={async (tabIds: string[]) => {
-                    for (const tabId of tabIds) {
-                      const syntheticEvent = { stopPropagation: () => {} } as React.MouseEvent;
-                      await closeTab(tabId, syntheticEvent);
-                    }
-                  }}
-                />
+                <AiChatPanel activeTabId={activeTabId || "New tab"} layout="compact" />
               </div>
             )}
           </div>

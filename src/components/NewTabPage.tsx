@@ -1,5 +1,5 @@
 import React from "react";
-import AiChatPanel from "./AiChatPanel";
+import { AiChatPanel } from "./AiChatPanel";
 import { useCreateAiChat, useSendAiMessage } from "@liveblocks/react";
 
 interface NewTabPageProps {
@@ -43,17 +43,7 @@ const NewTabPage: React.FC<NewTabPageProps> = ({
   if (showAiChat) {
     return (
       <div className="relative h-full w-full overflow-hidden rounded-[3px] border border-gray-300/80 bg-white p-0 shadow-sm">
-        <AiChatPanel
-          activeTabId={tabId}
-          activeTabUrl="about:blank"
-          webpageContent={{ isLoading: false, markdown: null }}
-          tabs={[]}
-          onNavigate={onNavigate}
-          onCreateNewTab={() => {}}
-          onSwitchTab={() => {}}
-          onCloseTabs={() => {}}
-          layout="inset"
-        />
+        <AiChatPanel activeTabId={tabId} layout="inset" />
       </div>
     );
   }
