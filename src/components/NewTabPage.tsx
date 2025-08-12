@@ -1,4 +1,3 @@
-import React from "react";
 import { AiChatPanel } from "./AiChatPanel";
 import { useCreateAiChat, useSendAiMessage } from "@liveblocks/react";
 
@@ -9,12 +8,12 @@ interface NewTabPageProps {
   onShowAiChat?: (show: boolean) => void;
 }
 
-const NewTabPage: React.FC<NewTabPageProps> = ({
+export function NewTabPage({
   tabId,
   onNavigate,
   showAiChat = false,
   onShowAiChat,
-}) => {
+}: NewTabPageProps) {
   const createAiChat = useCreateAiChat();
   const sendAiMessage = useSendAiMessage(tabId, {
     copilotId: process.env.VITE_LIVEBLOCKS_COPILOT_ID,
@@ -97,6 +96,4 @@ const NewTabPage: React.FC<NewTabPageProps> = ({
       </div>
     </div>
   );
-};
-
-export default NewTabPage;
+}

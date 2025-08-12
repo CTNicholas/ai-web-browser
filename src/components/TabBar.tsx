@@ -12,7 +12,7 @@ interface TabBarProps {
   activeTab: Tab | null;
 }
 
-const TabBar: React.FC<TabBarProps> = ({
+export function TabBar({
   tabs,
   onTabClick,
   onTabClose,
@@ -20,7 +20,7 @@ const TabBar: React.FC<TabBarProps> = ({
   onToggleAiChat,
   isAiChatVisible,
   activeTab,
-}) => {
+}: TabBarProps) {
   const truncateTitle = (title: string, maxLength: number = 20) => {
     return title.length > maxLength ? `${title.substring(0, maxLength)}...` : title;
   };
@@ -54,7 +54,7 @@ const TabBar: React.FC<TabBarProps> = ({
               <div
                 className={`group flex h-full w-full cursor-pointer select-none items-center rounded-[9px] rounded-b-none ${
                   tab.isActive
-                    ? "bg-gradient-to-b from-white/90 to-white/80 [box-shadow:0_-0.5px_2px_rgba(0,0,0,0.05)]"
+                    ? "bg-gradient-to-b from-white/90 to-white/80 [box-shadow:0_-1px_1.5px_rgba(0,0,0,0.03)]"
                     : "hover[box-shadow:0_-0.5px_2px_rgba(0,0,0,0.05)] hoverbg-white/50 hover:bg-gradient-to-b hover:from-white/50 hover:to-white/40"
                 }`}
                 onClick={() => onTabClick(tab.id)}
@@ -200,6 +200,4 @@ const TabBar: React.FC<TabBarProps> = ({
       )}
     </div>
   );
-};
-
-export default TabBar;
+}
