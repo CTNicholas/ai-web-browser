@@ -297,7 +297,8 @@ export function AiKnowledgeAndTools({
                 throw new Error(`Tabs not found: ${invalidTabs.join(", ")}`);
               }
 
-              // Allow closing all tabs - the browser will handle creating a new tab if needed
+              // Check if we're closing all tabs
+              const willCloseAllTabs = tabIds.length >= tabs.length;
 
               if (onCloseTabs) {
                 // Check if the current active tab is being closed
@@ -329,6 +330,12 @@ export function AiKnowledgeAndTools({
                   if (switchedToTab) {
                     description += ` and switched to "${switchedToTab.title}"`;
                   }
+                }
+
+                // If we closed all tabs, create a new one
+                if (willCloseAllTabs && onCreateNewTab) {
+                  onCreateNewTab("about:blank");
+                  description += " and opened a new tab";
                 }
 
                 return {

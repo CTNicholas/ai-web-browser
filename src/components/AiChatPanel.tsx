@@ -11,7 +11,13 @@ export function AiChatPanel({ activeTabId, layout = "compact" }: AiChatPanelProp
       <AiChat
         chatId={activeTabId}
         layout={layout}
-        className="[--lb-ai-chat-container-width:500px]"
+        className="!bg-transparent"
+        style={
+          {
+            "--lb-ai-chat-container-width": "500px",
+            backgroundColor: "transparent",
+          } as React.CSSProperties
+        }
       />
     </div>
   );
