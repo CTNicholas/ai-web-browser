@@ -501,7 +501,7 @@ function App() {
               />
             </div>
           </div>
-          <div className="m-2 mt-0 flex flex-1 flex-row gap-2 rounded-[5px] bg-white/80 p-2 shadow">
+          <div className="m-2 mt-0 flex flex-1 flex-row gap-2 rounded-[5px] bg-white/90 p-2 shadow">
             <div ref={contentRef} className="pointer-events-none absolute inset-0" />
             {!activeTab || activeTab.url === "about:blank" ? (
               <div className="relative flex h-full w-full items-center justify-center">
