@@ -51,7 +51,7 @@ export function NewTabPage({
     // <div className="flex h-full w-[1000px] min-w-0 items-center justify-center text-gray-600">
     <div className="w-[600px] max-w-full p-12 text-center">
       <div
-        className="-mt-6 mb-2 text-[44px] font-medium text-gray-600"
+        className="-mt-6 mb-2.5 text-[45px] font-medium text-gray-600"
         style={{
           // fontFamily: "Inter Display",
           // fontFamily: "Minipax",

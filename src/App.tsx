@@ -462,9 +462,12 @@ function App() {
           }}
         />
         <div className="flex h-screen flex-col bg-gray-200/10">
-          <div className="p-2 pb-0 pl-[93px]">
+          <div
+            className="absolute top-0 h-[40px] w-full"
+            style={{ WebkitAppRegion: "drag" } as any}
+          ></div>
+          <div className="p-2 pb-0 pl-[88px]">
             <div className="relative flex h-8 flex-row justify-between">
-              <div className="absolute inset-0" style={{ WebkitAppRegion: "drag" } as any}></div>
               {/* <AddressBar
                 activeTab={activeTab}
                 onNavigate={navigateTab}
