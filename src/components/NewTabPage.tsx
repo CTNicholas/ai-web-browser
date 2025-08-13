@@ -145,7 +145,7 @@ export function NewTabPage({
           </form>
         </div>
       </div>
-      <div className="mx-0 ml-0.5 mt-4 flex items-center justify-between text-[13px] font-medium text-gray-500/80">
+      <div className="mx-0 ml-1 mt-4 flex items-center justify-between text-[13px] font-medium text-gray-500/80">
         <div className="flex items-center">
           <svg
             className="-mb-px mr-0.5 block size-5 text-gray-400/70"

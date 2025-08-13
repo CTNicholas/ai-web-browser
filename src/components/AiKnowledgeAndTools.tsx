@@ -57,7 +57,8 @@ export function AiKnowledgeAndTools({
       <RegisterAiTool
         name="redirect-user"
         tool={defineAiTool()({
-          description: "Navigate the user to a URL",
+          description:
+            "Navigate the user to a URL in the current tab. Always use this when in a tab without a website open. Use it most of the other time too, unless a new tab feels relevant.",
           parameters: {
             type: "object",
             properties: {
