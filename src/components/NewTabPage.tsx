@@ -50,7 +50,16 @@ export function NewTabPage({
   return (
     // <div className="flex h-full w-[1000px] min-w-0 items-center justify-center text-gray-600">
     <div className="w-[600px] max-w-full p-12 text-center">
-      <div className="-mt-4 mb-7 text-3xl font-light text-gray-700">How can I help you?</div>
+      <div
+        className="-mt-6 mb-2 text-[44px] font-medium text-gray-600"
+        style={{
+          // fontFamily: "Inter Display",
+          // fontFamily: "Minipax",
+          fontFamily: "Aventine",
+        }}
+      >
+        How can I help you?
+      </div>
       <div className="">
         {/* Example of a React-friendly styled input for "Ask anything..." */}
         <div className="relative">
@@ -136,10 +145,10 @@ export function NewTabPage({
           </form>
         </div>
       </div>
-      <div className="mx-0 mt-4 flex items-center justify-between text-[13px] font-medium text-gray-500/80">
+      <div className="mx-0 ml-0.5 mt-4 flex items-center justify-between text-[13px] font-medium text-gray-500/80">
         <div className="flex items-center">
           <svg
-            className="mr-1.5 block size-6 text-gray-400/70"
+            className="-mb-px mr-0.5 block size-5 text-gray-400/70"
             fill="currentColor"
             viewBox="0 0 32 32"
             xmlns="http://www.w3.org/2000/svg"
