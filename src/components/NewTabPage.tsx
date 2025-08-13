@@ -50,8 +50,8 @@ export function NewTabPage({
   return (
     // <div className="flex h-full w-[1000px] min-w-0 items-center justify-center text-gray-600">
     <div className="w-[600px] max-w-full p-12 text-center">
-      <div className="-mt-3 mb-7 text-3xl font-light text-gray-700">How can I help you?</div>
-      <div className="mb-8">
+      <div className="-mt-4 mb-7 text-3xl font-light text-gray-700">How can I help you?</div>
+      <div className="">
         {/* Example of a React-friendly styled input for "Ask anything..." */}
         <div className="relative">
           <div
@@ -136,6 +136,31 @@ export function NewTabPage({
           </form>
         </div>
       </div>
+      <div className="mx-0 mt-4 flex items-center justify-between text-[13px] font-medium text-gray-500/80">
+        <div className="flex items-center">
+          <svg
+            className="mr-1.5 block size-6 text-gray-400/70"
+            fill="currentColor"
+            viewBox="0 0 32 32"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              clipRule="evenodd"
+              d="M21.657 8H2l5.657 5.6v7.733L21.657 8ZM10.343 24H30l-5.657-5.6v-7.733L10.343 24Z"
+              fill="currentColor"
+              fillRule="evenodd"
+            ></path>
+          </svg>
+          Type a web address or ask a question
+        </div>
+        <button
+          onClick={() => onNavigate("https://liveblocks.io")}
+          className="relative flex items-center gap-0.5 rounded px-2 py-1 ring-0 ring-black/10 before:-z-10 hover:bg-black/5 hover:text-gray-500"
+        >
+          liveblocks.io
+          <RedirectIcon className="mb-0" />
+        </button>
+      </div>
       {/* <div className="grid grid-cols-4 gap-4 text-sm">
           <button
             onClick={() => onNavigate("https://www.google.com")}
@@ -168,5 +193,24 @@ export function NewTabPage({
         </div> */}
     </div>
     // </div>
+  );
+}
+
+function RedirectIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M7 7h10v10M7 17L17 7" />
+    </svg>
   );
 }
