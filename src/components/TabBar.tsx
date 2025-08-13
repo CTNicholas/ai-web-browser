@@ -116,13 +116,13 @@ export function TabBar({
               {tab.isActive ? (
                 <>
                   <svg
-                    className="absolute bottom-0 right-full size-[6px] fill-white/70"
+                    className="absolute bottom-0 right-full size-[6px] fill-white/90"
                     viewBox="0 0 50 50"
                   >
                     <path d="M 0,50 A 50,50 0 0,0 50,0 L 50,50 Z" fill="" />
                   </svg>
                   <svg
-                    className="absolute bottom-0 left-full size-[6px] scale-x-[-1] fill-white/70"
+                    className="absolute bottom-0 left-full size-[6px] scale-x-[-1] fill-white/90"
                     viewBox="0 0 50 50"
                   >
                     <path d="M 0,50 A 50,50 0 0,0 50,0 L 50,50 Z" fill="" />
