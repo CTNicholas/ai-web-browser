@@ -34,7 +34,7 @@ export function NewTabPage({
           onShowAiChat(true);
         }
         createAiChat(tabId);
-        sendAiMessage(value);
+        setTimeout(() => sendAiMessage(value));
       }
     }
   };
