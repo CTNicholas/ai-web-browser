@@ -6,7 +6,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        neutral: colors.sky,
+        neutral: colors.slate,
       },
     },
   },

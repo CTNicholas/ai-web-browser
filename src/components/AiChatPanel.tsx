@@ -45,7 +45,7 @@ function Empty({ chatId }: AiChatComponentsEmptyProps) {
   });
 
   return (
-    <div className="mx-auto flex size-full max-w-[--inner-app-width] items-end px-4 pb-[calc(3*var(--lb-spacing))]">
+    <div className="mx-auto flex size-full max-w-[--inner-app-width] items-end px-4 pb-6">
       <div className="flex flex-col gap-2">
         <div className="text-sm text-neutral-600">Suggestions</div>
         <div className="flex flex-wrap items-start gap-1.5">
