@@ -9,12 +9,12 @@ const isDev = process.env.NODE_ENV === "development";
 let mainWindow;
 let webContentsViews = new Map();
 let activeViewId = null;
-let contentBounds = { x: 0, y: 60, width: 1200, height: 740 };
+let contentBounds = { x: 0, y: 60, width: 1440, height: 900 };
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1440,
+    height: 900,
     titleBarStyle: "hiddenInset", // Hide default title bar but keep traffic lights
     trafficLightPosition: { x: 18, y: 14 }, // Position the ●●● buttons
     vibrancy: "hud", // Add vibrancy effect
