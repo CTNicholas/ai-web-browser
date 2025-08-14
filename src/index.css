@@ -3,7 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ensure the root background is transparent so macOS vibrancy shows through */
 html,
 body,
 #root {
@@ -16,6 +15,5 @@ body {
 
 .lb-root {
   font-size: 14px;
-  /* --lb-accent: rgb(3, 180, 224); */
   --lb-accent: rgb(212, 177, 1);
 }

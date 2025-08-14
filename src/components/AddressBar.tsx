@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Tab } from '../types';
+import React, { useState, useRef, useEffect } from "react";
+import { Tab } from "../types";
 
 interface AddressBarProps {
   activeTab: Tab | null;
@@ -11,7 +11,7 @@ interface AddressBarProps {
   canGoForward?: boolean;
 }
 
-const AddressBar: React.FC<AddressBarProps> = ({
+export function AddressBar({
   activeTab,
   onNavigate,
   onBack,
@@ -19,8 +19,8 @@ const AddressBar: React.FC<AddressBarProps> = ({
   onRefresh,
   canGoBack = false,
   canGoForward = false,
-}) => {
-  const [url, setUrl] = useState('');
+}: AddressBarProps) {
+  const [url, setUrl] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const AddressBar: React.FC<AddressBarProps> = ({
     e.preventDefault();
     if (url.trim()) {
       let finalUrl = url.trim();
-      if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
         finalUrl = `https://${finalUrl}`;
       }
       onNavigate(finalUrl);
@@ -41,7 +41,7 @@ const AddressBar: React.FC<AddressBarProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       inputRef.current?.blur();
       if (activeTab) {
         setUrl(activeTab.url);
@@ -51,7 +51,7 @@ const AddressBar: React.FC<AddressBarProps> = ({
 
   return (
     <div className="flex h-full items-center gap-2 p-0 pb-0 backdrop-blur-md">
-      {/* <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1">
         <button
           onClick={onBack}
           disabled={!canGoBack}
@@ -89,7 +89,7 @@ const AddressBar: React.FC<AddressBarProps> = ({
             />
           </svg>
         </button>
-      </div> */}
+      </div>
 
       <form onSubmit={handleSubmit} className="h-full flex-1">
         <input
@@ -104,6 +104,4 @@ const AddressBar: React.FC<AddressBarProps> = ({
       </form>
     </div>
   );
-};
-
-export default AddressBar;
+}

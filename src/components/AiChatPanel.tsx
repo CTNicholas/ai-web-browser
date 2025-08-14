@@ -62,18 +62,6 @@ function Empty({ chatId }: AiChatComponentsEmptyProps) {
             ></path>
           </svg>
         </div>
-        {/* <div
-          className="-mt-6 mb-2.5 text-xl font-medium text-gray-600"
-          style={
-            {
-              // fontFamily: "Inter Display",
-              // fontFamily: "Minipax",
-              // fontFamily: "Aventine",
-            }
-          }
-        >
-          Try asking a question
-        </div> */}
       </div>
       <div className="flex flex-col gap-2">
         <div className="text-sm text-neutral-600">Suggestions</div>

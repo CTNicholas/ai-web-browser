@@ -7,20 +7,9 @@ interface TabBarProps {
   onTabClick: (tabId: string) => void;
   onTabClose: (tabId: string, e: React.MouseEvent) => void;
   onNewTab: () => void;
-  onToggleAiChat: () => void;
-  isAiChatVisible: boolean;
-  activeTab: Tab | null;
 }
 
-export function TabBar({
-  tabs,
-  onTabClick,
-  onTabClose,
-  onNewTab,
-  onToggleAiChat,
-  isAiChatVisible,
-  activeTab,
-}: TabBarProps) {
+export function TabBar({ tabs, onTabClick, onTabClose, onNewTab }: TabBarProps) {
   const truncateTitle = (title: string, maxLength: number = 20) => {
     return title.length > maxLength ? `${title.substring(0, maxLength)}...` : title;
   };
@@ -154,50 +143,6 @@ export function TabBar({
           ))}
         </AnimatePresence>
       </motion.div>
-
-      {/* AI Chat Toggle Button - only show when not on new tab */}
-      {activeTab && activeTab.url !== "about:blank" && (
-        <div />
-        // <button
-        //   onClick={(e) => {
-        //     e.preventDefault();
-        //     e.stopPropagation();
-        //     console.log("AI chat toggle clicked!", isAiChatVisible);
-        //     onToggleAiChat();
-        //   }}
-        //   className="relative z-20 ml-2 flex h-7 w-7 items-center justify-center rounded bg-white/20 transition-colors hover:bg-white/40 focus:outline-none"
-        //   style={{ WebkitAppRegion: "no-drag" } as any}
-        //   title={isAiChatVisible ? "Hide AI Chat" : "Show AI Chat"}
-        // >
-        //   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        //     {isAiChatVisible ? (
-        //       // Chat bubble with X (hide)
-        //       <g>
-        //         <path
-        //           strokeLinecap="round"
-        //           strokeLinejoin="round"
-        //           strokeWidth={2}
-        //           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-        //         />
-        //         <path
-        //           strokeLinecap="round"
-        //           strokeLinejoin="round"
-        //           strokeWidth={2}
-        //           d="M9 9l6 6M15 9l-6 6"
-        //         />
-        //       </g>
-        //     ) : (
-        //       // Chat bubble (show)
-        //       <path
-        //         strokeLinecap="round"
-        //         strokeLinejoin="round"
-        //         strokeWidth={2}
-        //         d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-        //       />
-        //     )}
-        //   </svg>
-        // </button>
-      )}
     </div>
   );
 }

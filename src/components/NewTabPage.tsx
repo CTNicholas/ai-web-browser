@@ -78,51 +78,15 @@ export function NewTabPage({
         />
       </motion.div>
       <div className="relative z-20 w-[600px] max-w-full p-12 text-center">
-        <div className="absolute inset-0 flex items-center justify-center">
-          {/* <motion.svg
-          initial={{ opacity: 1, scale: 1, rotate: 0, y: -0, x: -0 }}
-          animate={{ opacity: 0, scale: 0.5, rotate: 200, y: 100, x: 0 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="z-0 -mb-px mr-0.5 block size-[950px] text-gray-400/5"
-          fill="currentColor"
-          viewBox="0 0 32 32"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            clipRule="evenodd"
-            d="M21.657 8H2l5.657 5.6v7.733L21.657 8ZM10.343 24H30l-5.657-5.6v-7.733L10.343 24Z"
-            fill="currentColor"
-            fillRule="evenodd"
-          ></path>
-        </motion.svg> */}
-        </div>
-        <div
-          className="-mt-6 mb-2.5 text-[45px] font-medium text-gray-600"
-          style={{
-            // fontFamily: "Inter Display",
-            // fontFamily: "Minipax",
-            fontFamily: "Aventine",
-          }}
-        >
+        <div className="-mt-6 mb-2.5 font-[Aventine] text-[45px] font-medium text-gray-600">
           How can I help you?
         </div>
         <div className="">
           {/* Example of a React-friendly styled input for "Ask anything..." */}
           <div className="relative">
-            <div
-            // className="absolute inset-0"
-            // style={{
-            //   boxShadow: "0 0 0 1px #0000000a, 0 2px 6px #0000000d, 0 8px 26px #0000000f",
-            // }}
-            />
             <form
               className="lb-root lb-ai-composer lb-ai-composer-form lb-ai-chat-composer lb-elevation lb-elevation-moderate rounded-[14px]"
               dir="ltr"
-              style={
-                {
-                  // boxShadow: "0 0 0 1px #0000000a, 0 2px 6px #0000000d, 0 8px 26px #0000000f",
-                }
-              }
               onSubmit={(e) => {
                 e.preventDefault();
                 const value = (e.currentTarget.elements.namedItem("search") as HTMLInputElement)
@@ -219,36 +183,6 @@ export function NewTabPage({
             <RedirectIcon className="mb-0" />
           </button>
         </div>
-        {/* <div className="grid grid-cols-4 gap-4 text-sm">
-          <button
-            onClick={() => onNavigate("https://www.google.com")}
-            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
-          >
-            <div className="mb-2 text-lg">🔍</div>
-            <div>Google</div>
-          </button>
-          <button
-            onClick={() => onNavigate("https://www.youtube.com")}
-            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
-          >
-            <div className="mb-2 text-lg">📺</div>
-            <div>YouTube</div>
-          </button>
-          <button
-            onClick={() => onNavigate("https://www.github.com")}
-            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
-          >
-            <div className="mb-2 text-lg">⚡</div>
-            <div>GitHub</div>
-          </button>
-          <button
-            onClick={() => onNavigate("https://www.twitter.com")}
-            className="rounded-lg bg-neutral-100 p-4 transition-colors hover:bg-neutral-200"
-          >
-            <div className="mb-2 text-lg">🐦</div>
-            <div>Twitter</div>
-          </button>
-        </div> */}{" "}
       </div>
     </>
   );

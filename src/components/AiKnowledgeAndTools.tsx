@@ -466,33 +466,7 @@ export function AiKnowledgeAndTools({
                       : `Fetched "${result?.data?.title || args.url}" as markdown`
                     : `Fetching ${args.url}`
                 }
-              >
-                {/* {result?.data &&
-                  typeof result.data === "object" &&
-                  "markdown" in result.data &&
-                  result.data.markdown && (
-                    <div className="mt-2 max-h-96 overflow-y-auto rounded border bg-gray-50 p-3">
-                      <div className="mb-2 text-xs text-gray-600">
-                        {(result.data as any).wordCount} words • {(result.data as any).url}
-                      </div>
-                      <pre className="whitespace-pre-wrap font-mono text-sm">
-                        {typeof (result.data as any).markdown === "string" &&
-                        (result.data as any).markdown.length > 2000
-                          ? (result.data as any).markdown.substring(0, 2000) +
-                            "\n\n... (content truncated for display)"
-                          : (result.data as any).markdown}
-                      </pre>
-                    </div>
-                  )}
-                {result?.data &&
-                  typeof result.data === "object" &&
-                  "error" in result.data &&
-                  result.data.error && (
-                    <div className="mt-2 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
-                      Error: {(result.data as any).error}
-                    </div>
-                  )} */}
-              </AiTool>
+              />
             );
           },
         })}

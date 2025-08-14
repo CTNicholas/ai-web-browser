@@ -6,11 +6,11 @@ import { useOpacityToggle } from "./hooks/useOpacityToggle";
 import { TabBar } from "./components/TabBar";
 import { NewTabPage } from "./components/NewTabPage";
 import { AiChatPanel } from "./components/AiChatPanel";
-// import AddressBar from './components/AddressBar';
 import { LiveblocksProvider, RoomProvider } from "@liveblocks/react";
 import { AiKnowledgeAndTools } from "./components/AiKnowledgeAndTools";
+// import { AddressBar } from './components/AddressBar';
 
-function App() {
+export default function App() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
@@ -25,21 +25,9 @@ function App() {
   }>({});
   const browserAPI = useBrowserAPI();
   const webpageContent = useWebpageContent(activeTabId);
-  const { opacity, toggleOpacity } = useOpacityToggle(1, browserAPI, activeTabId);
+  const { toggleOpacity } = useOpacityToggle(1, browserAPI, activeTabId);
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId) || null;
-
-  // Toggle AI chat visibility for current tab
-  const toggleAiChat = () => {
-    if (activeTabId) {
-      setTabAiChatVisible((prev) => ({
-        ...prev,
-        [activeTabId]: !prev[activeTabId],
-      }));
-      // Trigger layout bounds update after state change
-      sendLayoutBoundsOnNextFrame();
-    }
-  };
 
   // Get current tab's AI chat visibility (default to true for new tabs)
   const isCurrentTabAiChatVisible = activeTabId ? (tabAiChatVisible[activeTabId] ?? true) : true;
@@ -498,9 +486,6 @@ function App() {
                 onTabClick={switchToTab}
                 onTabClose={closeTab}
                 onNewTab={() => createNewTab()}
-                onToggleAiChat={toggleAiChat}
-                isAiChatVisible={isCurrentTabAiChatVisible}
-                activeTab={activeTab}
               />
             </div>
           </div>
@@ -546,5 +531,3 @@ function App() {
     </LiveblocksProvider>
   );
 }
-
-export default App;
