@@ -1,6 +1,7 @@
 import { AiChatPanel } from "./AiChatPanel";
 import { useCreateAiChat, useSendAiMessage } from "@liveblocks/react";
 import { motion } from "motion/react";
+import { useRef } from "react";
 
 interface NewTabPageProps {
   tabId: string;
@@ -19,6 +20,7 @@ export function NewTabPage({
   const sendAiMessage = useSendAiMessage(tabId, {
     copilotId: process.env.VITE_LIVEBLOCKS_COPILOT_ID,
   });
+  const shimmerPlayed = useRef<Set<string>>(new Set());
 
   const handleSearchSubmit = (value: string) => {
     if (value.trim()) {
@@ -50,33 +52,39 @@ export function NewTabPage({
 
   return (
     <>
-      {/* Shimmer Effect */}
-      <motion.div
-        key={tabId}
-        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+      {/* Shimmer Effect - only show for new tabs */}
+      {!shimmerPlayed.current.has(tabId) && (
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-          style={{
-            transform: "skewX(-20deg)",
-            width: "100%",
-            left: "-100%",
-            mixBlendMode: "screen",
+          key={tabId}
+          className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          onAnimationComplete={() => {
+            // Mark this tab as having played the shimmer after animation completes
+            shimmerPlayed.current.add(tabId);
           }}
-          animate={{
-            x: ["-100%", "200%"],
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 40,
-            damping: 15,
-            delay: 0,
-          }}
-        />
-      </motion.div>
+        >
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            style={{
+              transform: "skewX(-20deg)",
+              width: "100%",
+              left: "-100%",
+              mixBlendMode: "screen",
+            }}
+            animate={{
+              x: ["-100%", "200%"],
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 40,
+              damping: 15,
+              delay: 0,
+            }}
+          />
+        </motion.div>
+      )}
       <div className="relative z-20 w-[600px] max-w-full p-12 text-center">
         <div className="-mt-6 mb-2.5 font-[Aventine] text-[45px] font-medium text-gray-600">
           How can I help you?
